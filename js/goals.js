@@ -10,9 +10,9 @@ async function fetchGoals() {
     if (!user) return;
 
     const { data, error } = await supabaseClient
-        .from('goals')
+        .from('metas_financeiras')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('usuario_id', user.id)
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -32,48 +32,45 @@ function renderGoals() {
     let totalProgress = 0;
 
     goals.forEach(goal => {
-        const percentage = Math.min((goal.current / goal.target) * 100, 100);
+        const target = parseFloat(goal.valor_alvo);
+        const current = parseFloat(goal.valor_atual);
+        const percentage = Math.min((current / target) * 100, 100);
         if (percentage >= 100) completed++;
         totalProgress += percentage;
 
         const card = document.createElement('div');
-        card.className = `card goal-card priority-${goal.priority}`;
+        card.className = `card goal-card`;
         card.innerHTML = `
             <div class="goal-header">
                 <div class="goal-info">
-                    <div class="goal-icon-large">${goal.icon || '🎯'}</div>
+                    <div class="goal-icon-large">🎯</div>
                     <div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <h3 class="serif">${goal.name}</h3>
+                            <h3 class="serif">${goal.titulo}</h3>
                             ${percentage >= 100 ? '<span class="text-green">✅</span>' : ''}
                         </div>
-                        <p class="text-muted-foreground" style="font-size: 0.875rem;">${goal.description || ''}</p>
+                        <p class="text-muted-foreground" style="font-size: 0.875rem;">${goal.versiculo || ''}</p>
                         <div style="display: flex; gap: 1rem; font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;">
-                            <span>Categoria: ${goal.category || 'Geral'}</span>
-                            <span>Prioridade: ${getPriorityLabel(goal.priority)}</span>
-                            <span>Prazo: ${formatDate(goal.deadline)}</span>
+                            <span>Categoria: ${goal.categoria || 'Geral'}</span>
+                            <span>Status: ${goal.status}</span>
+                            <span>Prazo: ${goal.prazo ? new Date(goal.prazo).toLocaleDateString('pt-BR') : '-'}</span>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="editGoal('${goal.id}')">✏️</button>
-                    <button class="btn btn-ghost" onclick="deleteGoal('${goal.id}')">🗑️</button>
+                    <button class="btn btn-ghost" onclick="editGoal(${goal.id})">✏️</button>
+                    <button class="btn btn-ghost" onclick="deleteGoal(${goal.id})">🗑️</button>
                 </div>
             </div>
             <div class="progress-section">
                 <div class="flex-between" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
                     <span style="font-weight: 600;">Progresso: ${percentage.toFixed(0)}%</span>
-                    <span class="text-muted-foreground">R$ ${goal.current.toLocaleString('pt-BR')} de R$ ${goal.target.toLocaleString('pt-BR')}</span>
+                    <span class="text-muted-foreground">R$ ${current.toLocaleString('pt-BR')} de R$ ${target.toLocaleString('pt-BR')}</span>
                 </div>
                 <div class="progress-container">
                     <div class="progress-bar" style="width: ${percentage}%"></div>
                 </div>
             </div>
-            ${percentage >= 100 ? `
-                <div style="background: #dcfce7; border: 1px solid #86efac; padding: 0.75rem; border-radius: 8px; color: #166534; font-size: 0.875rem; font-weight: 500;">
-                    🎉 Parabéns! Você atingiu sua meta!
-                </div>
-            ` : ''}
         `;
         goalsList.appendChild(card);
     });
@@ -81,16 +78,6 @@ function renderGoals() {
     document.getElementById('active-goals').textContent = goals.length;
     document.getElementById('completed-goals').textContent = completed;
     document.getElementById('overall-progress').textContent = goals.length > 0 ? `${(totalProgress / goals.length).toFixed(0)}%` : '0%';
-}
-
-function getPriorityLabel(p) {
-    const labels = { high: 'Alta', medium: 'Média', low: 'Baixa' };
-    return labels[p] || p;
-}
-
-function formatDate(d) {
-    if (!d) return '-';
-    return new Date(d).toLocaleDateString('pt-BR');
 }
 
 function setupEventListeners() {
@@ -104,27 +91,20 @@ function setupEventListeners() {
 
 function openModal(goal = null) {
     const modal = document.getElementById('modal-goal');
-    const title = document.getElementById('goal-modal-title');
-    const form = document.getElementById('form-goal');
-    
     if (goal) {
-        title.textContent = 'Editar Meta';
+        document.getElementById('goal-modal-title').textContent = 'Editar Meta';
         document.getElementById('goal-id').value = goal.id;
-        document.getElementById('goal-name').value = goal.name;
-        document.getElementById('goal-description').value = goal.description;
-        document.getElementById('goal-target').value = goal.target;
-        document.getElementById('goal-current').value = goal.current;
-        document.getElementById('goal-deadline').value = goal.deadline;
-        document.getElementById('goal-icon').value = goal.icon;
-        document.getElementById('goal-category').value = goal.category;
-        document.getElementById('goal-priority').value = goal.priority;
+        document.getElementById('goal-name').value = goal.titulo;
+        document.getElementById('goal-target').value = goal.valor_alvo;
+        document.getElementById('goal-current').value = goal.valor_atual;
+        document.getElementById('goal-deadline').value = goal.prazo;
+        document.getElementById('goal-category').value = goal.categoria;
+        document.getElementById('goal-description').value = goal.versiculo;
     } else {
-        title.textContent = 'Nova Meta';
-        form.reset();
+        document.getElementById('goal-modal-title').textContent = 'Nova Meta';
+        document.getElementById('form-goal').reset();
         document.getElementById('goal-id').value = '';
-        document.getElementById('goal-icon').value = '🎯';
     }
-    
     modal.style.display = 'flex';
 }
 
@@ -137,33 +117,25 @@ async function saveGoal() {
     if (!user) return;
 
     const id = document.getElementById('goal-id').value;
-    const data = {
-        name: document.getElementById('goal-name').value,
-        description: document.getElementById('goal-description').value,
-        target: parseFloat(document.getElementById('goal-target').value),
-        current: parseFloat(document.getElementById('goal-current').value),
-        deadline: document.getElementById('goal-deadline').value,
-        icon: document.getElementById('goal-icon').value || '🎯',
-        category: document.getElementById('goal-category').value,
-        priority: document.getElementById('goal-priority').value,
-        user_id: user.id
+    const payload = {
+        titulo: document.getElementById('goal-name').value,
+        valor_alvo: parseFloat(document.getElementById('goal-target').value),
+        valor_atual: parseFloat(document.getElementById('goal-current').value),
+        prazo: document.getElementById('goal-deadline').value,
+        categoria: document.getElementById('goal-category').value,
+        versiculo: document.getElementById('goal-description').value,
+        usuario_id: user.id
     };
 
     let result;
     if (id) {
-        result = await supabaseClient
-            .from('goals')
-            .update(data)
-            .eq('id', id);
+        result = await supabaseClient.from('metas_financeiras').update(payload).eq('id', id);
     } else {
-        result = await supabaseClient
-            .from('goals')
-            .insert([data]);
+        result = await supabaseClient.from('metas_financeiras').insert([payload]);
     }
 
-    if (result.error) {
-        alert('Erro ao salvar meta: ' + result.error.message);
-    } else {
+    if (result.error) alert('Erro: ' + result.error.message);
+    else {
         await fetchGoals();
         closeModal();
     }
@@ -175,16 +147,9 @@ function editGoal(id) {
 }
 
 async function deleteGoal(id) {
-    if (confirm('Deseja excluir esta meta?')) {
-        const { error } = await supabaseClient
-            .from('goals')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            alert('Erro ao excluir: ' + error.message);
-        } else {
-            await fetchGoals();
-        }
+    if (confirm('Excluir meta?')) {
+        const { error } = await supabaseClient.from('metas_financeiras').delete().eq('id', id);
+        if (error) alert('Erro: ' + error.message);
+        else await fetchGoals();
     }
 }

@@ -8,11 +8,10 @@ async function updateDashboardStats() {
     const user = await Auth.getUser();
     if (!user) return;
 
-    // Buscar transações para calcular totais
     const { data: transactions, error: tError } = await supabaseClient
-        .from('transactions')
-        .select('amount, type')
-        .eq('user_id', user.id);
+        .from('transacoes')
+        .select('valor, tipo')
+        .eq('usuario_id', user.id);
 
     if (tError) {
         console.error('Erro ao buscar estatísticas:', tError);
@@ -23,8 +22,9 @@ async function updateDashboardStats() {
     let expense = 0;
 
     (transactions || []).forEach(t => {
-        if (t.type === 'entrada') income += t.amount;
-        else expense += t.amount;
+        const valor = parseFloat(t.valor);
+        if (t.tipo === 'entrada') income += valor;
+        else expense += valor;
     });
 
     const balance = income - expense;
@@ -39,14 +39,13 @@ async function updateDashboardStats() {
     
     document.getElementById('month-savings').textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     
-    // Buscar metas ativas
     const { data: goals } = await supabaseClient
-        .from('goals')
-        .select('id, current, target')
-        .eq('user_id', user.id);
+        .from('metas_financeiras')
+        .select('id, valor_atual, valor_alvo')
+        .eq('usuario_id', user.id);
 
     const activeGoals = (goals || []).length;
-    const completedGoals = (goals || []).filter(g => g.current >= g.target).length;
+    const completedGoals = (goals || []).filter(g => parseFloat(g.valor_atual) >= parseFloat(g.valor_alvo)).length;
 
     document.getElementById('active-goals-count').textContent = activeGoals;
     document.getElementById('goals-summary').textContent = completedGoals > 0 
@@ -60,9 +59,9 @@ async function renderMiniGoals() {
 
     const container = document.getElementById('goals-list-mini');
     const { data: goals } = await supabaseClient
-        .from('goals')
-        .select('name, current, target')
-        .eq('user_id', user.id)
+        .from('metas_financeiras')
+        .select('titulo, valor_atual, valor_alvo')
+        .eq('usuario_id', user.id)
         .limit(3);
 
     if (!goals || goals.length === 0) {
@@ -71,11 +70,11 @@ async function renderMiniGoals() {
     }
 
     container.innerHTML = goals.map(goal => {
-        const progress = Math.min(Math.round((goal.current / goal.target) * 100), 100);
+        const progress = Math.min(Math.round((parseFloat(goal.valor_atual) / parseFloat(goal.valor_alvo)) * 100), 100);
         return `
             <div class="mb-4">
                 <div class="flex-between mb-1">
-                    <span style="font-size: 0.875rem; font-weight: 500;">${goal.name}</span>
+                    <span style="font-size: 0.875rem; font-weight: 500;">${goal.titulo}</span>
                     <span style="font-size: 0.75rem; color: var(--muted-foreground);">${progress}%</span>
                 </div>
                 <div class="progress-container" style="height: 6px; margin: 0;">
