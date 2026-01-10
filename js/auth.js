@@ -1,7 +1,7 @@
 // Configuração do Supabase
 // Nota: Em um ambiente real, essas chaves viriam de variáveis de ambiente
-const SUPABASE_URL = 'https://fetimotrijqyswrfoyzz.supabase.co';
-const SUPABASE_KEY = 'SUA_CHAVE_ANON_AQUI'; // O usuário deve fornecer ou eu deduzo se possível
+const SUPABASE_URL = 'https://ktjpphfxulkymobkjvqo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0anBwaGZ4dWxreW1vYmtqdnFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NjE0NTcsImV4cCI6MjA3MzAzNzQ1N30.KxrzIALYjCApoD7Br4BMeNgmtcL89XCqEKbxfmbxPEk'; // O usuário deve fornecer ou eu deduzo se possível
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
