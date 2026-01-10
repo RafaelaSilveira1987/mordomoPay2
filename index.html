@@ -698,29 +698,31 @@
                     .select('*')
                     .eq('celular', celular)
                     .eq('senha', senha)
-                    .eq('status', 'ativo')
-                    .single();
+                    .eq('status', 'ativo');
+
+                console.log('Resposta do Supabase:', { data: usuarios, error });
 
                 if (error) {
                     console.error('Erro ao buscar usuário:', error);
+                    throw new Error('Erro ao conectar ao banco de dados: ' + error.message);
+                }
+
+                if (!usuarios || usuarios.length === 0) {
                     throw new Error('Celular ou senha incorretos');
                 }
 
-                if (!usuarios) {
-                    throw new Error('Usuário não encontrado ou inativo');
-                }
+                const usuario = usuarios[0];
+                console.log('Login bem-sucedido:', usuario);
 
-                console.log('Login bem-sucedido:', usuarios);
-
-                currentUser = usuarios;
+                currentUser = usuario;
                 
                 // Atualiza UI
-                document.getElementById('user-name').textContent = usuarios.nome;
-                document.getElementById('user-phone').textContent = formatPhone(usuarios.celular);
-                document.getElementById('user-initial').textContent = usuarios.nome[0].toUpperCase();
+                document.getElementById('user-name').textContent = usuario.nome;
+                document.getElementById('user-phone').textContent = formatPhone(usuario.celular);
+                document.getElementById('user-initial').textContent = usuario.nome[0].toUpperCase();
 
                 showPage('dashboard-page');
-                showToast(`Bem-vindo(a), ${usuarios.nome}!`, 'success');
+                showToast(`Bem-vindo(a), ${usuario.nome}!`, 'success');
                 
             } catch (error) {
                 console.error('Erro no login:', error);
