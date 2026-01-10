@@ -1,13 +1,28 @@
-let goals = [
-    { id: '1', name: 'Reserva de Emergência', target: 10000, current: 3500, deadline: '2026-12-31', icon: '🛡️', category: 'Segurança', priority: 'high', description: 'Fundo para imprevistos' },
-    { id: '2', name: 'Viagem de Férias', target: 5000, current: 5000, deadline: '2026-07-15', icon: '✈️', category: 'Lazer', priority: 'medium', description: 'Viagem para o Nordeste' },
-    { id: '3', name: 'Novo Notebook', target: 4500, current: 1200, deadline: '2026-05-20', icon: '💻', category: 'Trabalho', priority: 'medium', description: 'Upgrade de equipamento' }
-];
+let goals = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-    renderGoals();
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchGoals();
     setupEventListeners();
 });
+
+async function fetchGoals() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabaseClient
+        .from('goals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error('Erro ao buscar metas:', error);
+        return;
+    }
+
+    goals = data || [];
+    renderGoals();
+}
 
 function renderGoals() {
     const goalsList = document.getElementById('goals-list');
@@ -26,15 +41,15 @@ function renderGoals() {
         card.innerHTML = `
             <div class="goal-header">
                 <div class="goal-info">
-                    <div class="goal-icon-large">${goal.icon}</div>
+                    <div class="goal-icon-large">${goal.icon || '🎯'}</div>
                     <div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <h3 class="serif">${goal.name}</h3>
                             ${percentage >= 100 ? '<span class="text-green">✅</span>' : ''}
                         </div>
-                        <p class="text-muted-foreground" style="font-size: 0.875rem;">${goal.description}</p>
+                        <p class="text-muted-foreground" style="font-size: 0.875rem;">${goal.description || ''}</p>
                         <div style="display: flex; gap: 1rem; font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;">
-                            <span>Categoria: ${goal.category}</span>
+                            <span>Categoria: ${goal.category || 'Geral'}</span>
                             <span>Prioridade: ${getPriorityLabel(goal.priority)}</span>
                             <span>Prazo: ${formatDate(goal.deadline)}</span>
                         </div>
@@ -74,15 +89,16 @@ function getPriorityLabel(p) {
 }
 
 function formatDate(d) {
+    if (!d) return '-';
     return new Date(d).toLocaleDateString('pt-BR');
 }
 
 function setupEventListeners() {
     document.getElementById('btn-new-goal').addEventListener('click', () => openModal());
     document.getElementById('btn-cancel-goal').addEventListener('click', closeModal);
-    document.getElementById('form-goal').addEventListener('submit', (e) => {
+    document.getElementById('form-goal').addEventListener('submit', async (e) => {
         e.preventDefault();
-        saveGoal();
+        await saveGoal();
     });
 }
 
@@ -116,10 +132,12 @@ function closeModal() {
     document.getElementById('modal-goal').style.display = 'none';
 }
 
-function saveGoal() {
+async function saveGoal() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
     const id = document.getElementById('goal-id').value;
     const data = {
-        id: id || Date.now().toString(),
         name: document.getElementById('goal-name').value,
         description: document.getElementById('goal-description').value,
         target: parseFloat(document.getElementById('goal-target').value),
@@ -127,18 +145,28 @@ function saveGoal() {
         deadline: document.getElementById('goal-deadline').value,
         icon: document.getElementById('goal-icon').value || '🎯',
         category: document.getElementById('goal-category').value,
-        priority: document.getElementById('goal-priority').value
+        priority: document.getElementById('goal-priority').value,
+        user_id: user.id
     };
 
+    let result;
     if (id) {
-        const index = goals.findIndex(g => g.id === id);
-        goals[index] = data;
+        result = await supabaseClient
+            .from('goals')
+            .update(data)
+            .eq('id', id);
     } else {
-        goals.push(data);
+        result = await supabaseClient
+            .from('goals')
+            .insert([data]);
     }
 
-    renderGoals();
-    closeModal();
+    if (result.error) {
+        alert('Erro ao salvar meta: ' + result.error.message);
+    } else {
+        await fetchGoals();
+        closeModal();
+    }
 }
 
 function editGoal(id) {
@@ -146,9 +174,17 @@ function editGoal(id) {
     if (g) openModal(g);
 }
 
-function deleteGoal(id) {
+async function deleteGoal(id) {
     if (confirm('Deseja excluir esta meta?')) {
-        goals = goals.filter(g => g.id !== id);
-        renderGoals();
+        const { error } = await supabaseClient
+            .from('goals')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            alert('Erro ao excluir: ' + error.message);
+        } else {
+            await fetchGoals();
+        }
     }
 }

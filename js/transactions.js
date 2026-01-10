@@ -1,18 +1,30 @@
-// Mock data para desenvolvimento inicial
-let transactions = [
-    { id: '1', description: 'Salário', amount: 5200, type: 'entrada', category: 'Renda', date: '2026-01-05', payee: 'Empresa XYZ' },
-    { id: '2', description: 'Aluguel', amount: 1500, type: 'saida', category: 'Moradia', date: '2026-01-01', payee: 'Proprietário' },
-    { id: '3', description: 'Supermercado', amount: 320, type: 'saida', category: 'Alimentação', date: '2026-01-03', payee: 'Mercado Central' },
-    { id: '4', description: 'Dízimo', amount: 520, type: 'saida', category: 'Espiritual', date: '2026-01-07', payee: 'Igreja' }
-];
-
+let transactions = [];
 const categories = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Educação', 'Lazer', 'Espiritual', 'Renda', 'Renda Extra'];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderCategories();
-    renderTransactions();
+    await fetchTransactions();
     setupEventListeners();
 });
+
+async function fetchTransactions() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabaseClient
+        .from('transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('date', { ascending: false });
+
+    if (error) {
+        console.error('Erro ao buscar transações:', error);
+        return;
+    }
+
+    transactions = data || [];
+    renderTransactions();
+}
 
 function renderCategories() {
     const filterSelect = document.getElementById('filter-category');
@@ -80,9 +92,9 @@ function setupEventListeners() {
 
     document.getElementById('btn-cancel-transaction').addEventListener('click', closeModal);
 
-    document.getElementById('form-transaction').addEventListener('submit', (e) => {
+    document.getElementById('form-transaction').addEventListener('submit', async (e) => {
         e.preventDefault();
-        saveTransaction();
+        await saveTransaction();
     });
 }
 
@@ -114,27 +126,39 @@ function closeModal() {
     document.getElementById('modal-transaction').style.display = 'none';
 }
 
-function saveTransaction() {
+async function saveTransaction() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
     const id = document.getElementById('transaction-id').value;
     const data = {
-        id: id || Date.now().toString(),
         description: document.getElementById('transaction-description').value,
         amount: parseFloat(document.getElementById('transaction-amount').value),
         type: document.getElementById('transaction-type').value,
         category: document.getElementById('transaction-category').value,
         date: document.getElementById('transaction-date').value,
-        payee: document.getElementById('transaction-payee').value
+        payee: document.getElementById('transaction-payee').value,
+        user_id: user.id
     };
 
+    let result;
     if (id) {
-        const index = transactions.findIndex(t => t.id === id);
-        transactions[index] = data;
+        result = await supabaseClient
+            .from('transactions')
+            .update(data)
+            .eq('id', id);
     } else {
-        transactions.push(data);
+        result = await supabaseClient
+            .from('transactions')
+            .insert([data]);
     }
 
-    renderTransactions();
-    closeModal();
+    if (result.error) {
+        alert('Erro ao salvar transação: ' + result.error.message);
+    } else {
+        await fetchTransactions();
+        closeModal();
+    }
 }
 
 function editTransaction(id) {
@@ -142,9 +166,17 @@ function editTransaction(id) {
     if (t) openModal(t);
 }
 
-function deleteTransaction(id) {
+async function deleteTransaction(id) {
     if (confirm('Tem certeza que deseja excluir esta transação?')) {
-        transactions = transactions.filter(t => t.id !== id);
-        renderTransactions();
+        const { error } = await supabaseClient
+            .from('transactions')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            alert('Erro ao excluir: ' + error.message);
+        } else {
+            await fetchTransactions();
+        }
     }
 }

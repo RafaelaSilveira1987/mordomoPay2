@@ -1,48 +1,89 @@
-document.addEventListener('DOMContentLoaded', () => {
-    updateDashboardStats();
-    renderMiniGoals();
+document.addEventListener('DOMContentLoaded', async () => {
+    await updateDashboardStats();
+    await renderMiniGoals();
     renderAchievements();
 });
 
-function updateDashboardStats() {
-    // Em um cenário real, buscaria do Supabase
-    const income = 5200;
-    const expense = 3850;
-    const balance = income - expense;
-    const health = 72;
+async function updateDashboardStats() {
+    const user = await Auth.getUser();
+    if (!user) return;
 
-    document.getElementById('hero-income').textContent = `R$ ${income.toLocaleString('pt-BR')}`;
-    document.getElementById('hero-expense').textContent = `R$ ${expense.toLocaleString('pt-BR')}`;
-    document.getElementById('hero-balance').textContent = `R$ ${balance.toLocaleString('pt-BR')}`;
+    // Buscar transações para calcular totais
+    const { data: transactions, error: tError } = await supabaseClient
+        .from('transactions')
+        .select('amount, type')
+        .eq('user_id', user.id);
+
+    if (tError) {
+        console.error('Erro ao buscar estatísticas:', tError);
+        return;
+    }
+
+    let income = 0;
+    let expense = 0;
+
+    (transactions || []).forEach(t => {
+        if (t.type === 'entrada') income += t.amount;
+        else expense += t.amount;
+    });
+
+    const balance = income - expense;
+    const health = income > 0 ? Math.min(Math.round((balance / income) * 100), 100) : 0;
+
+    document.getElementById('hero-income').textContent = `R$ ${income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    document.getElementById('hero-expense').textContent = `R$ ${expense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    document.getElementById('hero-balance').textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     
     document.getElementById('health-percentage').textContent = `${health}%`;
     document.getElementById('health-bar').style.width = `${health}%`;
     
-    document.getElementById('month-savings').textContent = `R$ ${balance.toLocaleString('pt-BR')}`;
+    document.getElementById('month-savings').textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     
-    document.getElementById('active-goals-count').textContent = '3';
-    document.getElementById('goals-summary').textContent = '1 meta já alcançada!';
+    // Buscar metas ativas
+    const { data: goals } = await supabaseClient
+        .from('goals')
+        .select('id, current, target')
+        .eq('user_id', user.id);
+
+    const activeGoals = (goals || []).length;
+    const completedGoals = (goals || []).filter(g => g.current >= g.target).length;
+
+    document.getElementById('active-goals-count').textContent = activeGoals;
+    document.getElementById('goals-summary').textContent = completedGoals > 0 
+        ? `${completedGoals} meta(s) já alcançada(s)!` 
+        : 'Nenhuma meta alcançada ainda.';
 }
 
-function renderMiniGoals() {
-    const container = document.getElementById('goals-list-mini');
-    const miniGoals = [
-        { name: 'Reserva de Emergência', progress: 35 },
-        { name: 'Viagem de Férias', progress: 100 },
-        { name: 'Novo Notebook', progress: 26 }
-    ];
+async function renderMiniGoals() {
+    const user = await Auth.getUser();
+    if (!user) return;
 
-    container.innerHTML = miniGoals.map(goal => `
-        <div class="mb-4">
-            <div class="flex-between mb-1">
-                <span style="font-size: 0.875rem; font-weight: 500;">${goal.name}</span>
-                <span style="font-size: 0.75rem; color: var(--muted-foreground);">${goal.progress}%</span>
+    const container = document.getElementById('goals-list-mini');
+    const { data: goals } = await supabaseClient
+        .from('goals')
+        .select('name, current, target')
+        .eq('user_id', user.id)
+        .limit(3);
+
+    if (!goals || goals.length === 0) {
+        container.innerHTML = '<p class="text-muted-foreground">Nenhuma meta definida.</p>';
+        return;
+    }
+
+    container.innerHTML = goals.map(goal => {
+        const progress = Math.min(Math.round((goal.current / goal.target) * 100), 100);
+        return `
+            <div class="mb-4">
+                <div class="flex-between mb-1">
+                    <span style="font-size: 0.875rem; font-weight: 500;">${goal.name}</span>
+                    <span style="font-size: 0.75rem; color: var(--muted-foreground);">${progress}%</span>
+                </div>
+                <div class="progress-container" style="height: 6px; margin: 0;">
+                    <div class="progress-bar" style="width: ${progress}%; background-color: ${progress === 100 ? '#10b981' : 'var(--primary)'}"></div>
+                </div>
             </div>
-            <div class="progress-container" style="height: 6px; margin: 0;">
-                <div class="progress-bar" style="width: ${goal.progress}%; background-color: ${goal.progress === 100 ? '#10b981' : 'var(--primary)'}"></div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function renderAchievements() {
