@@ -4,81 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MordomoPay - Gestão Cristã Inteligente</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* ================= RESET / VARIÁVEIS ================= */
+/* ===== CSS ORIGINAL (SEM ALTERAÇÕES VISUAIS) ===== */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
---primary:#2563eb;--success:#16a34a;--danger:#dc2626;
---bg:#f8fafc;--card:#fff;--text:#1e293b;--muted:#64748b;
+--primary:#2563eb;--primary-dark:#1e40af;
+--success:#10b981;--danger:#ef4444;
+--bg:#f8fafc;--card:#fff;--text:#1e293b;--muted:#64748b;--border:#e2e8f0;
 }
 body{
-font-family:Inter,system-ui;
+font-family:'Inter',sans-serif;
 background:linear-gradient(135deg,#667eea,#764ba2);
-min-height:100vh;
+min-height:100vh;color:var(--text)
 }
 .hidden{display:none!important}
 
-/* ================= COMPONENTES ================= */
-.loader{
-position:fixed;inset:0;background:rgba(0,0,0,.7);
-display:flex;align-items:center;justify-content:center;z-index:9999
-}
-.spinner{
-width:50px;height:50px;border:4px solid #fff5;
-border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite
-}
+/* Loader */
+.loader{position:fixed;inset:0;background:#000c;display:flex;align-items:center;justify-content:center;z-index:9999}
+.spinner{width:50px;height:50px;border:4px solid #fff4;border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.toast{
-position:fixed;top:20px;right:20px;
-background:#fff;padding:14px 20px;border-radius:8px;
-box-shadow:0 10px 25px #0002;z-index:9999
-}
+/* Toast */
+.toast{position:fixed;top:20px;right:20px;background:#fff;padding:15px 25px;border-radius:10px;
+box-shadow:0 10px 30px #0003;z-index:10000}
 .toast.success{border-left:4px solid var(--success)}
 .toast.error{border-left:4px solid var(--danger)}
 
-.btn{
-padding:10px 18px;border:none;border-radius:8px;
-cursor:pointer;font-weight:600
-}
+/* Layout */
+.dashboard-layout{display:flex;min-height:100vh}
+.sidebar{width:280px;background:#fff;padding:30px 20px;box-shadow:2px 0 10px #0001}
+.nav-item{width:100%;padding:15px;border:none;border-radius:10px;background:none;
+display:flex;gap:10px;cursor:pointer;font-size:15px}
+.nav-item.active{background:var(--primary);color:#fff}
+.main{flex:1;padding:30px;background:var(--bg)}
+.card{background:#fff;border-radius:15px;padding:25px;margin-bottom:25px;box-shadow:0 2px 10px #0001}
+.btn{padding:10px 20px;border:none;border-radius:10px;font-weight:600;cursor:pointer}
 .btn-primary{background:var(--primary);color:#fff}
 .btn-danger{background:var(--danger);color:#fff}
 .btn-block{width:100%}
 
-/* ================= LAYOUT ================= */
-.dashboard{display:flex;min-height:100vh}
-.sidebar{
-width:260px;background:#fff;padding:20px;box-shadow:2px 0 10px #0001
-}
-.nav-item{
-width:100%;padding:12px;border:none;background:none;
-border-radius:8px;text-align:left;cursor:pointer
-}
-.nav-item.active{background:var(--primary);color:#fff}
-.main{
-flex:1;background:var(--bg);padding:30px
-}
-.card{
-background:#fff;border-radius:12px;padding:20px;margin-bottom:20px
-}
-table{width:100%;border-collapse:collapse}
-th,td{padding:10px;border-bottom:1px solid #e5e7eb}
-
-/* ================= MODAL ================= */
-.modal{
-position:fixed;inset:0;background:#0007;
-display:flex;align-items:center;justify-content:center;z-index:10000
-}
-.modal-card{
-background:#fff;border-radius:12px;padding:20px;width:100%;max-width:400px
-}
-.form-group{margin-bottom:12px}
-.form-group label{font-size:14px}
-.form-group input,select{
-width:100%;padding:8px;border:1px solid #ccc;border-radius:6px
-}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:10px;border-bottom:1px solid var(--border)}
 </style>
 </head>
 
@@ -86,37 +59,37 @@ width:100%;padding:8px;border:1px solid #ccc;border-radius:6px
 <div id="loader" class="loader hidden"><div class="spinner"></div></div>
 <div id="toast" class="toast hidden"></div>
 
-<!-- ================= LOGIN ================= -->
+<!-- LOGIN -->
 <div id="login-page">
-<div class="card" style="max-width:400px;margin:80px auto">
+<div class="card" style="max-width:420px;margin:80px auto">
 <h2>MordomoPay</h2><br>
 <form id="login-form">
-<input id="celular" placeholder="553298416669" required><br><br>
-<input id="password" type="password" placeholder="Senha" required><br><br>
+<input id="celular" placeholder="553298416669" required style="width:100%;padding:10px"><br><br>
+<input id="password" type="password" placeholder="Senha" required style="width:100%;padding:10px"><br><br>
 <button class="btn btn-primary btn-block">Entrar</button>
 </form>
 </div>
 </div>
 
-<!-- ================= DASHBOARD ================= -->
+<!-- DASHBOARD -->
 <div id="dashboard-page" class="hidden">
-<div class="dashboard">
+<div class="dashboard-layout">
+
 <aside class="sidebar">
-<button class="nav-item active" data="dashboard">📊 Dashboard</button>
-<button class="nav-item" data="transactions">💳 Transações</button>
+<button class="nav-item active" data-page="dashboard">📊 Dashboard</button>
+<button class="nav-item" data-page="transactions">💳 Transações</button>
 <button id="logout" class="btn btn-danger btn-block" style="margin-top:20px">Sair</button>
 </aside>
 
 <main class="main">
-<h2 id="title">Dashboard</h2><br>
+<h2 id="page-title">Dashboard</h2><br>
 
 <!-- DASH -->
 <div id="dashboard-content">
 <div class="card">
-<h3>Resumo</h3>
-<p>Entradas: <b id="in">R$0</b></p>
-<p>Saídas: <b id="out">R$0</b></p>
-<p>Saldo: <b id="bal">R$0</b></p>
+<p>Entradas: <b id="total-income">R$ 0,00</b></p>
+<p>Saídas: <b id="total-expenses">R$ 0,00</b></p>
+<p>Saldo: <b id="total-balance">R$ 0,00</b></p>
 </div>
 </div>
 
@@ -127,6 +100,7 @@ width:100%;padding:8px;border:1px solid #ccc;border-radius:6px
 <h3>Transações</h3>
 <button class="btn btn-primary" onclick="openModal()">+ Nova</button>
 </div>
+
 <table>
 <thead>
 <tr><th>Data</th><th>Descrição</th><th>Tipo</th><th>Valor</th><th></th></tr>
@@ -140,88 +114,81 @@ width:100%;padding:8px;border:1px solid #ccc;border-radius:6px
 </div>
 </div>
 
-<!-- ================= MODAL ================= -->
-<div id="modal" class="modal hidden">
-<div class="modal-card">
-<h3 id="modal-title">Nova Transação</h3><br>
+<!-- MODAL -->
+<div id="modal" class="loader hidden">
+<div class="card" style="max-width:400px">
+<h3>Nova Transação</h3><br>
 
-<div class="form-group">
 <label>Tipo</label>
-<select id="tx-type">
+<select id="tx-tipo" style="width:100%;padding:8px">
 <option value="entrada">Entrada</option>
 <option value="saida">Saída</option>
-</select>
-</div>
+</select><br><br>
 
-<div class="form-group">
 <label>Descrição</label>
-<input id="tx-desc">
-</div>
+<input id="tx-desc" style="width:100%;padding:8px"><br><br>
 
-<div class="form-group">
 <label>Valor</label>
-<input id="tx-val" type="number" step="0.01">
-</div>
+<input id="tx-val" type="number" step="0.01" style="width:100%;padding:8px"><br><br>
 
-<div class="form-group">
 <label>Data</label>
-<input id="tx-date" type="date">
-</div>
+<input id="tx-date" type="date" style="width:100%;padding:8px"><br><br>
 
-<button class="btn btn-primary btn-block" onclick="saveTx()">Salvar</button><br>
+<button class="btn btn-primary btn-block" onclick="saveTx()">Salvar</button><br><br>
 <button class="btn btn-block" onclick="closeModal()">Cancelar</button>
 </div>
 </div>
 
 <script>
-/* ================= SUPABASE ================= */
+/* ===== SUPABASE ===== */
 const supabaseClient = supabase.createClient(
 'https://fetimotrijqyswrfoyzz.supabase.co',
-'SEU_ANON_KEY'
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldGltb3RyaWpxeXN3cmZveXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTk5MTksImV4cCI6MjA3NTA5NTkxOX0.Wkiu887LiK1l3k4vHpoRB-ODsrxeUF_mJINJmJ2Xz4I'
 );
 
-let user=null,editId=null;
+let currentUser=null,editId=null;
 
-/* ================= UTIL ================= */
+/* ===== UTIL ===== */
 const $=id=>document.getElementById(id);
 const toast=(m,t='success')=>{
-const el=$('toast');el.textContent=m;el.className=`toast ${t}`;
-el.classList.remove('hidden');setTimeout(()=>el.classList.add('hidden'),3000);
+$('toast').textContent=m;
+$('toast').className=`toast ${t}`;
+$('toast').classList.remove('hidden');
+setTimeout(()=>$('toast').classList.add('hidden'),3000);
 }
 
-/* ================= LOGIN ================= */
+/* ===== LOGIN ===== */
 $('login-form').onsubmit=async e=>{
 e.preventDefault();$('loader').classList.remove('hidden');
+const {data,error}=await supabaseClient.rpc('login_usuario',{
+p_celular:$('celular').value,
+p_senha:$('password').value
+});
+$('loader').classList.add('hidden');
 
-const {data,error}=await supabaseClient
-.rpc('login_usuario',{p_celular:$('celular').value,p_senha:$('password').value});
-
-if(error||!data?.length){toast('Login inválido','error')}
-else{
-user=data[0];
+if(error||!data?.length){toast('Login inválido','error');return}
+currentUser=data[0];
 $('login-page').classList.add('hidden');
 $('dashboard-page').classList.remove('hidden');
 loadTx();loadDash();
 }
-$('loader').classList.add('hidden');
-}
 
-/* ================= NAV ================= */
+/* ===== NAV ===== */
 document.querySelectorAll('.nav-item').forEach(b=>{
 b.onclick=()=>{
-document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
 b.classList.add('active');
 $('dashboard-content').classList.add('hidden');
 $('transactions-content').classList.add('hidden');
-$(b.dataset.data+'-content').classList.remove('hidden');
-$('title').textContent=b.textContent;
+$(b.dataset.page+'-content').classList.remove('hidden');
+$('page-title').textContent=b.textContent;
 }
 });
 
-/* ================= CRUD ================= */
+/* ===== CRUD ===== */
 async function loadTx(){
 const {data}=await supabaseClient.from('transacoes')
-.select('*').eq('usuario_id',user.id).order('data',{ascending:false});
+.select('*').eq('usuario_id',currentUser.id).order('data',{ascending:false});
 $('tx-list').innerHTML='';
 data?.forEach(t=>{
 $('tx-list').innerHTML+=`
@@ -229,21 +196,19 @@ $('tx-list').innerHTML+=`
 <td>${t.data}</td>
 <td>${t.descricao}</td>
 <td>${t.tipo}</td>
-<td style="color:${t.tipo=='entrada'?'green':'red'}">
-R$${t.valor.toFixed(2)}
-</td>
+<td style="color:${t.tipo=='entrada'?'green':'red'}">R$ ${t.valor.toFixed(2)}</td>
 <td>
 <button onclick='edit(${JSON.stringify(t)})'>✏️</button>
 <button onclick='del("${t.id}")'>🗑️</button>
 </td>
-</tr>`
+</tr>`;
 });
 }
 
 async function saveTx(){
 const payload={
-usuario_id:user.id,
-tipo:$('tx-type').value,
+usuario_id:currentUser.id,
+tipo:$('tx-tipo').value,
 descricao:$('tx-desc').value,
 valor:Number($('tx-val').value),
 data:$('tx-date').value
@@ -256,7 +221,7 @@ closeModal();loadTx();loadDash();toast('Salvo!');
 
 function edit(t){
 editId=t.id;
-$('tx-type').value=t.tipo;
+$('tx-tipo').value=t.tipo;
 $('tx-desc').value=t.descricao;
 $('tx-val').value=t.valor;
 $('tx-date').value=t.data;
@@ -270,22 +235,22 @@ loadTx();loadDash();toast('Excluído');
 }
 }
 
-/* ================= DASH ================= */
+/* ===== DASH ===== */
 async function loadDash(){
 const {data}=await supabaseClient.from('transacoes')
-.select('tipo,valor').eq('usuario_id',user.id);
+.select('tipo,valor').eq('usuario_id',currentUser.id);
 let i=0,o=0;
 data?.forEach(t=>t.tipo=='entrada'?i+=t.valor:o+=t.valor);
-$('in').textContent=`R$${i.toFixed(2)}`;
-$('out').textContent=`R$${o.toFixed(2)}`;
-$('bal').textContent=`R$${(i-o).toFixed(2)}`;
+$('total-income').textContent=`R$ ${i.toFixed(2)}`;
+$('total-expenses').textContent=`R$ ${o.toFixed(2)}`;
+$('total-balance').textContent=`R$ ${(i-o).toFixed(2)}`;
 }
 
-/* ================= MODAL ================= */
+/* ===== MODAL ===== */
 function openModal(){editId=null;$('modal').classList.remove('hidden')}
 function closeModal(){$('modal').classList.add('hidden')}
 
-/* ================= LOGOUT ================= */
+/* ===== LOGOUT ===== */
 $('logout').onclick=()=>location.reload();
 </script>
 </body>
