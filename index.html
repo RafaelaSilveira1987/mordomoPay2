@@ -124,16 +124,26 @@
             color: var(--text);
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid var(--border);
             border-radius: 10px;
             font-size: 15px;
             transition: all 0.3s;
+            font-family: inherit;
         }
 
-        .form-group input:focus {
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
@@ -163,8 +173,42 @@
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
         }
 
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
         .btn-block {
             width: 100%;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
         }
 
         .login-divider {
@@ -278,6 +322,7 @@
             transition: all 0.3s;
             font-size: 15px;
             color: var(--text);
+            text-align: left;
         }
 
         .nav-item:hover {
@@ -344,6 +389,11 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
+        .card h3 {
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -356,18 +406,177 @@
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card.income {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.expense {
+            border-left-color: var(--danger);
         }
 
         .stat-card h3 {
             font-size: 14px;
             color: var(--text-muted);
             margin-bottom: 10px;
+            font-weight: 500;
         }
 
         .stat-big {
             font-size: 32px;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--text);
+        }
+
+        .stat-card.income .stat-big {
+            color: var(--success);
+        }
+
+        .stat-card.expense .stat-big {
+            color: var(--danger);
+        }
+
+        /* ACTIONS BAR */
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .actions-bar h3 {
+            margin: 0;
+        }
+
+        .actions-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* TABLE */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        table th {
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        table tr:hover {
+            background: var(--bg);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-entrada {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-saida {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* MODAL */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
         }
 
         /* TOAST */
@@ -381,6 +590,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             z-index: 10000;
             animation: slideIn 0.3s ease;
+            max-width: 400px;
         }
 
         @keyframes slideIn {
@@ -421,6 +631,14 @@
             transition: 0.3s;
         }
 
+        /* FILTERS */
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
         @media (max-width: 768px) {
             .menu-toggle {
                 display: block;
@@ -442,6 +660,19 @@
             .main-content {
                 width: 100%;
                 padding: 80px 20px 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .actions-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -569,14 +800,15 @@
                         </div>
                     </header>
 
+                    <!-- Dashboard Content -->
                     <div id="dashboard-content">
                         <div class="stats-grid">
-                            <div class="stat-card">
-                                <h3>Receitas</h3>
+                            <div class="stat-card income">
+                                <h3>Total de Entradas</h3>
                                 <p class="stat-big" id="total-income">R$ 0,00</p>
                             </div>
-                            <div class="stat-card">
-                                <h3>Despesas</h3>
+                            <div class="stat-card expense">
+                                <h3>Total de Saídas</h3>
                                 <p class="stat-big" id="total-expenses">R$ 0,00</p>
                             </div>
                             <div class="stat-card">
@@ -595,9 +827,7 @@
                         <div class="card">
                             <h3>📖 Versículo do Dia</h3>
                             <p style="color: var(--text); margin-top: 15px; font-style: italic; line-height: 1.6;">
-                                "Trazei todos os dízimos à casa do tesouro, para que haja mantimento na minha casa, 
-                                e depois fazei prova de mim, diz o Senhor dos Exércitos, se eu não vos abrir as janelas 
-                                do céu e não derramar sobre vós uma bênção tal, que dela vos advenha a maior abastança."
+                                "Trazei todos os dízimos à casa do tesouro, para que haja mantimento na minha casa."
                             </p>
                             <p style="color: var(--text-muted); margin-top: 10px; font-weight: 600;">
                                 Malaquias 3:10
@@ -605,221 +835,137 @@
                         </div>
                     </div>
 
+                    <!-- Transactions Content -->
                     <div id="transactions-content" class="hidden">
+                        <div class="stats-grid">
+                            <div class="stat-card income">
+                                <h3>Total de Entradas</h3>
+                                <p class="stat-big" id="trans-income">R$ 0,00</p>
+                            </div>
+                            <div class="stat-card expense">
+                                <h3>Total de Saídas</h3>
+                                <p class="stat-big" id="trans-expenses">R$ 0,00</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Saldo</h3>
+                                <p class="stat-big" id="trans-balance">R$ 0,00</p>
+                            </div>
+                        </div>
+
                         <div class="card">
-                            <h3>💳 Transações</h3>
-                            <p style="color: var(--text-muted); margin-top: 10px;">
-                                Gerencie suas transações financeiras registradas via WhatsApp.
-                            </p>
+                            <div class="actions-bar">
+                                <h3>Filtros</h3>
+                                <div class="actions-buttons">
+                                    <button class="btn btn-success btn-sm" id="btn-new-transaction">
+                                        ➕ Nova Transação
+                                    </button>
+                                    <button class="btn btn-outline btn-sm" id="btn-export">
+                                        ⬇️ Exportar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="filters-grid">
+                                <div class="form-group">
+                                    <label>Tipo</label>
+                                    <select id="filter-type">
+                                        <option value="all">Todas</option>
+                                        <option value="entrada">Entradas</option>
+                                        <option value="saida">Saídas</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoria</label>
+                                    <select id="filter-category">
+                                        <option value="all">Todas</option>
+                                        <option value="Alimentação">Alimentação</option>
+                                        <option value="Moradia">Moradia</option>
+                                        <option value="Transporte">Transporte</option>
+                                        <option value="Saúde">Saúde</option>
+                                        <option value="Educação">Educação</option>
+                                        <option value="Lazer">Lazer</option>
+                                        <option value="Espiritual">Espiritual</option>
+                                        <option value="Salário">Salário</option>
+                                        <option value="Freelance">Freelance</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Descrição</th>
+                                            <th>Categoria</th>
+                                            <th>Data</th>
+                                            <th>Valor</th>
+                                            <th>Tipo</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactions-tbody">
+                                        <tr>
+                                            <td colspan="6" style="text-align: center; color: var(--text-muted);">
+                                                Nenhuma transação encontrada
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Goals Content -->
                     <div id="goals-content" class="hidden">
                         <div class="card">
-                            <h3>🎯 Metas Financeiras</h3>
-                            <p style="color: var(--text-muted); margin-top: 10px;">
-                                Defina e acompanhe suas metas financeiras.
-                            </p>
+                            <div class="actions-bar">
+                                <h3>Suas Metas</h3>
+                                <button class="btn btn-success btn-sm" id="btn-new-goal">
+                                    ➕ Nova Meta
+                                </button>
+                            </div>
+                            <div id="goals-list" style="margin-top: 20px;">
+                                <p style="text-align: center; color: var(--text-muted);">
+                                    Nenhuma meta cadastrada
+                                </p>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Tithe Content -->
                     <div id="tithe-content" class="hidden">
-                        <div class="card">
-                            <h3>🙏 Dízimos e Ofertas</h3>
-                            <p style="color: var(--text-muted); margin-top: 10px;">
-                                Acompanhe seus dízimos e ofertas.
-                            </p>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>Total de Dízimos</h3>
+                                <p class="stat-big" id="total-tithe">R$ 0,00</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Dízimos este Mês</h3>
+                                <p class="stat-big" id="month-tithe">R$ 0,00</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>Registros</h3>
+                                <p class="stat-big" id="tithe-count">0</p>
+                            </div>
                         </div>
-                    </div>
-                </main>
-            </div>
-        </div>
-    </div>
 
-    <script>
-        // Configuração Supabase
-        const SUPABASE_URL = 'https://fetimotrijqyswrfoyzz.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldGltb3RyaWpxeXN3cmZveXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTk5MTksImV4cCI6MjA3NTA5NTkxOX0.Wkiu887LiK1l3k4vHpoRB-ODsrxeUF_mJINJmJ2Xz4I';
-
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        let currentUser = null;
-
-        // Utility Functions
-        function showLoader() {
-            document.getElementById('loader').classList.remove('hidden');
-        }
-
-        function hideLoader() {
-            document.getElementById('loader').classList.add('hidden');
-        }
-
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast ${type}`;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 3000);
-        }
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
-        }
-
-        function showContent(contentId) {
-            document.querySelectorAll('[id$="-content"]').forEach(c => c.classList.add('hidden'));
-            document.getElementById(contentId).classList.remove('hidden');
-        }
-
-        function formatPhone(phone) {
-            const cleaned = phone.replace(/\D/g, '');
-            if (cleaned.length === 13) {
-                return `+${cleaned.slice(0, 2)} (${cleaned.slice(2, 4)}) ${cleaned.slice(4, 9)}-${cleaned.slice(9)}`;
-            }
-            return phone;
-        }
-
-        // Login com tabela usuarios
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const celular = document.getElementById('celular').value.trim();
-            const senha = document.getElementById('password').value;
-
-            showLoader();
-
-            try {
-                console.log('🔐 Tentando login com celular:', celular);
-
-                // Busca usuário e valida senha com bcrypt usando função do PostgreSQL
-                const { data: usuarios, error } = await supabaseClient
-                    .rpc('login_usuario', {
-                        p_celular: celular,
-                        p_senha: senha
-                    });
-
-                if (error) {
-                    console.error('❌ Erro na função login:', error);
-                    
-                    // Se a função não existir, tenta método alternativo
-                    if (error.code === '42883' || error.message?.includes('function')) {
-                        console.log('⚠️ Função RPC não encontrada, usando método alternativo...');
-                        
-                        // Busca o usuário
-                        const { data: usuarioData } = await supabaseClient
-                            .from('usuarios')
-                            .select('*')
-                            .eq('celular', celular)
-                            .eq('status', 'ativo')
-                            .single();
-
-                        if (!usuarioData) {
-                            throw new Error('❌ Celular não cadastrado');
-                        }
-
-                        // Valida senha com query SQL direta
-                        const { data: senhaValida } = await supabaseClient
-                            .rpc('validar_senha', {
-                                senha_digitada: senha,
-                                senha_hash: usuarioData.senha
-                            });
-
-                        if (!senhaValida) {
-                            throw new Error('❌ Senha incorreta');
-                        }
-
-                        currentUser = usuarioData;
-                        
-                        // Atualiza UI
-                        document.getElementById('user-name').textContent = usuarioData.nome;
-                        document.getElementById('user-phone').textContent = formatPhone(usuarioData.celular);
-                        document.getElementById('user-initial').textContent = usuarioData.nome[0].toUpperCase();
-
-                        showPage('dashboard-page');
-                        showToast(`Bem-vindo(a), ${usuarioData.nome}!`, 'success');
-                        hideLoader();
-                        return;
-                    }
-                    
-                    throw new Error('Erro ao fazer login');
-                }
-
-                if (!usuarios || usuarios.length === 0) {
-                    throw new Error('❌ Celular ou senha incorretos');
-                }
-
-                const usuario = usuarios[0];
-                console.log('✅ Login bem-sucedido:', usuario.nome);
-
-                currentUser = usuario;
-                
-                // Atualiza UI
-                document.getElementById('user-name').textContent = usuario.nome;
-                document.getElementById('user-phone').textContent = formatPhone(usuario.celular);
-                document.getElementById('user-initial').textContent = usuario.nome[0].toUpperCase();
-
-                showPage('dashboard-page');
-                showToast(`Bem-vindo(a), ${usuario.nome}!`, 'success');
-                
-            } catch (error) {
-                console.error('Erro no login:', error);
-                showToast(error.message || 'Erro ao fazer login', 'error');
-            } finally {
-                hideLoader();
-            }
-        });
-
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            if (!confirm('Deseja sair?')) return;
-
-            currentUser = null;
-            showPage('login-page');
-            showToast('Logout realizado com sucesso!', 'success');
-        });
-
-        // Navegação
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', (e) => {
-                const page = e.currentTarget.getAttribute('data-page');
-                
-                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                
-                const titles = {
-                    'dashboard': 'Dashboard',
-                    'transactions': 'Transações',
-                    'goals': 'Metas',
-                    'tithe': 'Dízimos'
-                };
-                
-                document.getElementById('page-title').textContent = titles[page];
-                showContent(page + '-content');
-
-                // Fecha sidebar em mobile
-                document.getElementById('sidebar').classList.remove('active');
-            });
-        });
-
-        // Menu toggle mobile
-        document.getElementById('menu-toggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
-
-        // Fecha sidebar ao clicar fora (mobile)
-        document.addEventListener('click', (e) => {
-            const sidebar = document.getElementById('sidebar');
-            const menuToggle = document.getElementById('menu-toggle');
-            
-            if (window.innerWidth <= 768 && 
-                !sidebar.contains(e.target) && 
-                !menuToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
-        });
-
-        console.log('MordomoPay iniciado e conectado ao Supabase');
-    </script>
-</body>
-</html>
+                        <div class="card">
+                            <div class="actions-bar">
+                                <h3>Registros de Dízimos</h3>
+                                <button class="btn btn-success btn-sm" id="btn-new-tithe">
+                                    ➕ Novo Dízimo
+                                </button>
+                            </div>
+                            <div class="table-container" style="margin-top: 20px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Descrição</th>
+                                            <th>Data</th>
+                                            <th>Valor</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ti
