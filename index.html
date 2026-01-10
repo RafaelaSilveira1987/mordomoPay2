@@ -470,9 +470,9 @@
                         <form id="login-form">
                             <div class="form-group">
                                 <label for="celular">Celular</label>
-                                <input type="tel" id="celular" placeholder="5532984166669" required>
-                                <small style="color: var(--text-muted); font-size: 12px;">
-                                    Digite no formato: 5532984166669
+                                <input type="tel" id="celular" placeholder="553298416669" required>
+                                <small style="color: var(--text-muted); font-size: 12px; display: block; margin-top: 5px;">
+                                    ✅ Digite no formato: 553298416669 (código do país + DDD + número)
                                 </small>
                             </div>
 
@@ -690,7 +690,13 @@
             showLoader();
 
             try {
-                console.log('Tentando login com celular:', celular);
+                console.log('🔐 Tentando login com celular:', celular);
+                console.log('📱 Tamanho do celular:', celular.length, 'caracteres');
+
+                // Validação básica
+                if (celular.length < 13) {
+                    throw new Error('⚠️ Celular inválido! Deve ter 13 dígitos (Ex: 553298416669)');
+                }
 
                 // Busca usuário na tabela usuarios
                 const { data: usuarios, error } = await supabaseClient
@@ -700,19 +706,32 @@
                     .eq('senha', senha)
                     .eq('status', 'ativo');
 
-                console.log('Resposta do Supabase:', { data: usuarios, error });
+                console.log('📊 Resposta do Supabase:', { 
+                    encontrados: usuarios?.length || 0, 
+                    erro: error 
+                });
 
                 if (error) {
-                    console.error('Erro ao buscar usuário:', error);
-                    throw new Error('Erro ao conectar ao banco de dados: ' + error.message);
+                    console.error('❌ Erro do Supabase:', error);
+                    throw new Error('Erro ao conectar ao banco de dados');
                 }
 
                 if (!usuarios || usuarios.length === 0) {
-                    throw new Error('Celular ou senha incorretos');
+                    // Tenta buscar apenas pelo celular para dar feedback melhor
+                    const { data: usuarioPorCelular } = await supabaseClient
+                        .from('usuarios')
+                        .select('celular, status')
+                        .eq('celular', celular);
+
+                    if (usuarioPorCelular && usuarioPorCelular.length > 0) {
+                        throw new Error('❌ Senha incorreta');
+                    } else {
+                        throw new Error('❌ Celular não cadastrado');
+                    }
                 }
 
                 const usuario = usuarios[0];
-                console.log('Login bem-sucedido:', usuario);
+                console.log('✅ Login bem-sucedido:', usuario.nome);
 
                 currentUser = usuario;
                 
