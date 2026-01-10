@@ -8,34 +8,31 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body style="background-color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 100vh;">
-    <div class="card" style="width: 100%; max-width: 400px; padding: 2.5rem;">
-        <div class="text-center mb-8">
-            <div class="logo-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; font-size: 2rem;">M</div>
-            <h1 class="serif" style="font-size: 1.75rem;">MordomoPay</h1>
-            <p class="text-muted-foreground">Gestão Financeira Cristã</p>
+<body style="background-color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 2rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="logo-box" style="margin: 0 auto 1rem; width: 48px; height: 48px; font-size: 1.5rem;">M</div>
+            <h1 class="serif" style="font-size: 1.5rem;">Bem-vindo de volta</h1>
+            <p class="text-muted-foreground">Entre com seu celular e senha</p>
         </div>
 
         <form id="login-form">
             <div class="form-group">
                 <label for="phone">Celular</label>
-                <input type="tel" id="phone" placeholder="(00) 00000-0000" required>
+                <input type="text" id="phone" placeholder="(00) 00000-0000" required>
             </div>
             <div class="form-group">
                 <label for="password">Senha</label>
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; margin-top: 1rem;">
-                Entrar
-            </button>
+            <div id="login-error" style="color: var(--destructive); font-size: 0.875rem; margin-bottom: 1rem; display: none;"></div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;" id="login-submit">Entrar</button>
         </form>
 
-        <div class="text-center mt-6">
-            <p class="text-muted-foreground" style="font-size: 0.875rem;">
-                Ainda não tem uma conta? <a href="#" class="text-primary" style="font-weight: 600; text-decoration: none;">Cadastre-se</a>
-            </p>
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <p class="text-muted-foreground" style="font-size: 0.875rem;">Ainda não tem uma conta? <a href="#" style="color: var(--primary); font-weight: 600;">Cadastre-se</a></p>
         </div>
     </div>
 
@@ -45,12 +42,22 @@
             e.preventDefault();
             const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
-            
-            // Simulação de login para demonstração, integração real em auth.js
-            console.log('Tentativa de login:', phone);
-            
-            // Redirecionar para o dashboard
-            window.location.href = 'index.html';
+            const errorDiv = document.getElementById('login-error');
+            const submitBtn = document.getElementById('login-submit');
+
+            errorDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Entrando...';
+
+            try {
+                await Auth.login(phone, password);
+                window.location.href = 'index.html';
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Entrar';
+            }
         });
     </script>
 </body>
