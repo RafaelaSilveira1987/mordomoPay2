@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayMordomo - Gestão Cristã Inteligente</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Estilos -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/transactions.css">
+    <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Loader -->
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page active">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="logo">
+                        <div class="logo-circle">M</div>
+                        <h1>MordomoPay</h1>
+                        <p>Gestão Cristã</p>
+                    </div>
+
+                    <form id="login-form" class="login-form">
+                        <div class="form-group">
+                            <label for="phone">Celular</label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                placeholder="(11) 98765-4321" 
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Senha</label>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                placeholder="Sua senha" 
+                                required
+                            >
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            Entrar
+                        </button>
+                    </form>
+
+                    <div class="login-divider">ou</div>
+
+                    <a href="https://wa.me/553287073537?text=Olá%20MordomoPay%21%20Gostaria%20de%20criar%20uma%20conta" 
+                       class="btn btn-secondary btn-block" 
+                       target="_blank">
+                        Criar Conta via WhatsApp
+                    </a>
+
+                    <p class="login-footer">
+                        Ao entrar, você concorda com nossos Termos de Serviço
+                    </p>
+                </div>
+
+                <div class="login-verse">
+                    <p class="verse-text">
+                        "Na casa do sábio há comida escolhida e azeite, mas o tolo tudo desperdiça."
+                    </p>
+                    <p class="verse-reference">Provérbios 21:20</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page">
+            <!-- Sidebar -->
+            <aside id="sidebar" class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-logo">
+                        <div class="logo-circle">M</div>
+                        <div>
+                            <h2>MordomoPay</h2>
+                            <p>Gestão Cristã</p>
+                        </div>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" data-page="dashboard">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-label">Dashboard</span>
+                    </button>
+                    <button class="nav-item" data-page="transactions">
+                        <span class="nav-icon">💳</span>
+                        <span class="nav-label">Transações</span>
+                    </button>
+                    <button class="nav-item" data-page="goals">
+                        <span class="nav-icon">🎯</span>
+                        <span class="nav-label">Metas</span>
+                    </button>
+                    <button class="nav-item" data-page="tithe">
+                        <span class="nav-icon">🙏</span>
+                        <span class="nav-label">Dízimos</span>
+                    </button>
+                    <button class="nav-item" data-page="tips">
+                        <span class="nav-icon">💡</span>
+                        <span class="nav-label">Dicas</span>
+                    </button>
+                    <button class="nav-item" data-page="reports">
+                        <span class="nav-icon">📈</span>
+                        <span class="nav-label">Relatórios</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-verse">
+                    <p id="sidebar-verse-text">
+                        "O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."
+                    </p>
+                    <p id="sidebar-verse-ref">Provérbios 10:14</p>
+                </div>
+
+                <div class="sidebar-footer">
+                    <button id="logout-btn" class="btn btn-outline btn-small">
+                        Sair
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Mobile Menu Toggle -->
+            <button id="menu-toggle" class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Header -->
+                <header class="header">
+                    <div class="header-left">
+                        <h2 id="page-title">Dashboard</h2>
+                    </div>
+                    <div class="header-right">
+                        <div class="user-info">
+                            <p id="user-name">Usuário</p>
+                            <p id="user-status">Conectado</p>
+                        </div>
+                        <div class="user-avatar">
+                            <span id="user-initial">U</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Content Area -->
+                <div class="content-area">
+                    <!-- Dashboard Content -->
+                    <div id="dashboard-content" class="page-content active">
+                        <!-- Hero Section -->
+                        <div class="hero-section">
+                            <div class="hero-text">
+                                <h1>Bem-vindo de volta!</h1>
+                                <p>Seu progresso financeiro este mês está excelente. Continue assim!</p>
+                                <div class="hero-stats">
+                                    <div class="stat">
+                                        <p class="stat-label">Receitas</p>
+                                        <p class="stat-value" id="total-income">R$ 5.200</p>
+                                    </div>
+                                    <div class="stat">
+                                        <p class="stat-label">Despesas</p>
+                                        <p class="stat-value" id="total-expenses">R$ 3.850</p>
+                                    </div>
+                                    <div class="stat">
+                                        <p class="stat-label">Saldo</p>
+                                        <p class="stat-value" id="total-balance">R$ 1.350</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hero-image">
+                                <img src="https://via.placeholder.com/200x200?text=Crescimento" alt="Crescimento Financeiro">
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="stats-grid">
+                            <div class="stat-card health">
+                                <div class="stat-header">
+                                    <h3>Saúde Financeira</h3>
+                                    <span class="icon">❤️</span>
+                                </div>
+                                <p class="stat-big" id="health-score">72%</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="health-progress" style="width: 72%"></div>
+                                </div>
+                                <p class="stat-footer">Excelente! Você está no caminho certo.</p>
+                            </div>
+
+                            <div class="stat-card savings">
+                                <div class="stat-header">
+                                    <h3>Economia do Mês</h3>
+                                    <span class="icon">📈</span>
+                                </div>
+                                <p class="stat-big" id="monthly-savings">R$ 1.350</p>
+                                <p class="stat-footer">+12% comparado ao mês anterior</p>
+                            </div>
+
+                            <div class="stat-card goals">
+                                <div class="stat-header">
+                                    <h3>Metas Ativas</h3>
+                                    <span class="icon">🎯</span>
+                                </div>
+                                <p class="stat-big" id="active-goals">3</p>
+                                <p class="stat-footer">1 meta já alcançada!</p>
+                            </div>
+                        </div>
+
+                        <!-- Goals and Achievements -->
+                        <div class="two-column-grid">
+                            <div class="card">
+                                <h2>Metas Financeiras</h2>
+                                <div id="goals-list" class="goals-list">
+                                    <!-- Goals will be inserted here -->
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <h2>Conquistas</h2>
+                                <div id="achievements-grid" class="achievements-grid">
+                                    <!-- Achievements will be inserted here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Verses and Tips -->
+                        <div class="two-column-grid">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>📖 Versículo do Dia</h3>
+                                    <div class="nav-buttons">
+                                        <button class="btn-nav" id="prev-verse">Anterior</button>
+                                        <button class="btn-nav" id="next-verse">Próximo</button>
+                                    </div>
+                                </div>
+                                <div id="verse-container" class="verse-container">
+                                    <p class="verse-text" id="daily-verse">
+                                        "Na casa do sábio há comida escolhida e azeite, mas o tolo tudo desperdiça."
+                                    </p>
+                                    <p class="verse-ref" id="verse-ref">Provérbios 21:20</p>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3>💡 Dica de Saúde Financeira</h3>
+                                    <div class="nav-buttons">
+                                        <button class="btn-nav" id="prev-tip">Anterior</button>
+                                        <button class="btn-nav" id="next-tip">Próximo</button>
+                                    </div>
+                                </div>
+                                <div id="tip-container" class="tip-container">
+                                    <p class="tip-text" id="daily-tip">
+                                        Registre todas as suas transações para manter controle total do seu dinheiro.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transactions Content -->
+                    <div id="transactions-content" class="page-content">
+                        <div class="page-header">
+                            <h1>Transações</h1>
+                            <p>Gerencie todas as suas transações financeiras</p>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="stats-grid">
+                            <div class="stat-card income">
+                                <p class="stat-label">Total de Entradas</p>
+                                <p class="stat-big" id="trans-income">R$ 0</p>
+                            </div>
+                            <div class="stat-card expense">
+                                <p class="stat-label">Total de Saídas</p>
+                                <p class="stat-big" id="trans-expenses">R$ 0</p>
+                            </div>
+                            <div class="stat-card balance">
+                                <p class="stat-label">Saldo</p>
+                                <p class="stat-big" id="trans-balance">R$ 0</p>
+                            </div>
+                        </div>
+
+                        <!-- Filters and Actions -->
+                        <div class="card">
+                            <div class="filter-header">
+                                <h3>Filtros</h3>
+                                <div class="action-buttons">
+                                    <button class="btn btn-primary" id="add-transaction-btn">
+                                        ➕ Nova Transação
+                                    </button>
+                                    <button class="btn btn-outline" id="export-btn">
+                                        ⬇️ Exportar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="filter-grid">
+                                <div class="form-group">
+                                    <label>Tipo</label>
+                                    <select id="filter-type">
+                                        <option value="all">Todas</option>
+                                        <option value="entrada">Entradas</option>
+                                        <option value="saida">Saídas</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Categoria</label>
+                                    <select id="filter-category">
+                                        <option value="all">Todas</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transactions Table -->
+                        <div class="card table-card">
+                            <div class="table-wrapper">
+                                <table id="transactions-table" class="transactions-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Descrição</th>
+                                            <th>Categoria</th>
+                                            <th>Pagador/Recebedor</th>
+                                            <th>Data</th>
+                                            <th>Valor</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="transactions-tbody">
+                                        <!-- Transactions will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Goals Content -->
+                    <div id="goals-content" class="page-content">
+                        <div class="page-header">
+                            <h1>Metas Financeiras</h1>
+                            <p>Defina e acompanhe suas metas financeiras</p>
+                        </div>
+
+                        <div class="card">
+                            <div class="filter-header">
+                                <h3>Suas Metas</h3>
+                                <button class="btn btn-primary" id="add-goal-btn">
+                                    ➕ Nova Meta
+                                </button>
+                            </div>
+                            <div id="goals-full-list" class="goals-full-list">
+                                <!-- Goals will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tithe Content -->
+                    <div id="tithe-content" class="page-content">
+                        <div class="page-header">
+                            <h1>Dízimos</h1>
+                            <p>Registre e acompanhe seus dízimos</p>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <p class="stat-label">Total de Dízimos</p>
+                                <p class="stat-big" id="total-tithe">R$ 0</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-label">Dízimos este Mês</p>
+                                <p class="stat-big" id="month-tithe">R$ 0</p>
+                            </div>
+                            <div class="stat-card">
+                                <p class="stat-label">Meses Consecutivos</p>
+                                <p class="stat-big" id="consecutive-months">0</p>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="filter-header">
+                                <h3>Registros de Dízimos</h3>
+                                <button class="btn btn-primary" id="add-tithe-btn">
+                                    ➕ Novo Dízimo
+                                </button>
+                            </div>
+                            <div id="tithe-list" class="tithe-list">
+                                <!-- Tithe records will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tips Content -->
+                    <div id="tips-content" class="page-content">
+                        <div class="page-header">
+                            <h1>Dicas de Saúde Financeira</h1>
+                            <p>Aprenda dicas valiosas para melhorar sua gestão financeira</p>
+                        </div>
+
+                        <div id="tips-grid" class="tips-grid">
+                            <!-- Tips will be inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Reports Content -->
+                    <div id="reports-content" class="page-content">
+                        <div class="page-header">
+                            <h1>Relatórios</h1>
+                            <p>Análise detalhada de suas finanças</p>
+                        </div>
+
+                        <div class="card">
+                            <h2>Resumo Financeiro</h2>
+                            <div id="reports-summary" class="reports-summary">
+                                <!-- Reports will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Transaction -->
+    <div id="transaction-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Nova Transação</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="transaction-form" class="modal-form">
+                <div class="form-group">
+                    <label for="trans-description">Descrição</label>
+                    <input type="text" id="trans-description" required>
+                </div>
+                <div class="form-group">
+                    <label for="trans-amount">Valor</label>
+                    <input type="number" id="trans-amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="trans-type">Tipo</label>
+                    <select id="trans-type" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="saida">Saída</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="trans-category">Categoria</label>
+                    <select id="trans-category" required>
+                        <!-- Categories will be inserted here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="trans-payee">Pagador/Recebedor</label>
+                    <input type="text" id="trans-payee" required>
+                </div>
+                <div class="form-group">
+                    <label for="trans-date">Data</label>
+                    <input type="date" id="trans-date" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline modal-cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Goal -->
+    <div id="goal-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="goal-modal-title">Nova Meta</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="goal-form" class="modal-form">
+                <div class="form-group">
+                    <label for="goal-name">Nome da Meta</label>
+                    <input type="text" id="goal-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="goal-target">Valor Alvo</label>
+                    <input type="number" id="goal-target" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="goal-current">Valor Atual</label>
+                    <input type="number" id="goal-current" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="goal-category">Categoria</label>
+                    <input type="text" id="goal-category" required>
+                </div>
+                <div class="form-group">
+                    <label for="goal-deadline">Prazo</label>
+                    <input type="date" id="goal-deadline" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline modal-cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Add/Edit Tithe -->
+    <div id="tithe-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="tithe-modal-title">Novo Dízimo</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="tithe-form" class="modal-form">
+                <div class="form-group">
+                    <label for="tithe-amount">Valor</label>
+                    <input type="number" id="tithe-amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="tithe-date">Data</label>
+                    <input type="date" id="tithe-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="tithe-description">Descrição</label>
+                    <input type="text" id="tithe-description">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline modal-cancel">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Scripts -->
+    <script src="js/utils/logger.js"></script>
+    <script src="js/utils/formatter.js"></script>
+    <script src="js/utils/validators.js"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/pages/dashboard.js"></script>
+    <script src="js/pages/transactions.js"></script>
+    <script src="js/pages/goals.js"></script>
+    <script src="js/pages/tithe.js"></script>
+    <script src="js/pages/tips.js"></script>
+    <script src="js/pages/reports.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
