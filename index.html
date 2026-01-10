@@ -3,21 +3,448 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PayMordomo - Gestão Cristã Inteligente</title>
-    
-    <!-- Google Fonts -->
+    <title>MordomoPay - Gestão Cristã Inteligente</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Supabase -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Estilos -->
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/transactions.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .hidden { display: none !important; }
+
+        /* LOADER */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* LOGIN PAGE */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            color: var(--text);
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        .login-divider {
+            text-align: center;
+            margin: 25px 0;
+            color: var(--text-muted);
+            position: relative;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .login-divider::before { left: 0; }
+        .login-divider::after { right: 0; }
+
+        .btn-secondary {
+            background: #25d366;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #20ba5a;
+        }
+
+        .login-footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .login-verse {
+            max-width: 450px;
+            margin: 30px auto 0;
+            text-align: center;
+            color: white;
+        }
+
+        .verse-text {
+            font-size: 16px;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .verse-reference {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* DASHBOARD */
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: white;
+            padding: 30px 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .sidebar-header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .sidebar-logo .logo-circle {
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+        }
+
+        .sidebar-logo h2 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .sidebar-logo p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .nav-item {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 8px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .nav-item:hover {
+            background: var(--bg);
+        }
+
+        .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            right: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background: var(--bg);
+            overflow-y: auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .stat-big {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+        .toast.info { border-left: 4px solid var(--primary); }
+
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: var(--text);
+            margin: 5px 0;
+            transition: 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                width: 100%;
+                padding: 80px 20px 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -26,547 +453,333 @@
             <div class="spinner"></div>
         </div>
 
+        <!-- Toast -->
+        <div id="toast" class="toast hidden"></div>
+
         <!-- Login Page -->
         <div id="login-page" class="page active">
             <div class="login-container">
-                <div class="login-card">
-                    <div class="logo">
-                        <div class="logo-circle">M</div>
-                        <h1>MordomoPay</h1>
-                        <p>Gestão Cristã</p>
+                <div>
+                    <div class="login-card">
+                        <div class="logo">
+                            <div class="logo-circle">M</div>
+                            <h1>MordomoPay</h1>
+                            <p>Gestão Cristã Inteligente</p>
+                        </div>
+
+                        <form id="login-form">
+                            <div class="form-group">
+                                <label for="celular">Celular</label>
+                                <input type="tel" id="celular" placeholder="5532984166669" required>
+                                <small style="color: var(--text-muted); font-size: 12px;">
+                                    Digite no formato: 5532984166669
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Senha</label>
+                                <input type="password" id="password" placeholder="Sua senha" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block">
+                                Entrar
+                            </button>
+                        </form>
+
+                        <div class="login-divider">ou</div>
+
+                        <a href="https://wa.me/553287073537?text=Olá%20MordomoPay!%20Gostaria%20de%20criar%20uma%20conta" 
+                           class="btn btn-secondary btn-block" 
+                           target="_blank">
+                            📱 Criar Conta via WhatsApp
+                        </a>
+
+                        <p class="login-footer">
+                            Ao entrar, você concorda com nossos Termos de Serviço
+                        </p>
                     </div>
 
-                    <form id="login-form" class="login-form">
-                        <div class="form-group">
-                            <label for="phone">Celular</label>
-                            <input 
-                                type="tel" 
-                                id="phone" 
-                                placeholder="(11) 98765-4321" 
-                                required
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Senha</label>
-                            <input 
-                                type="password" 
-                                id="password" 
-                                placeholder="Sua senha" 
-                                required
-                            >
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block">
-                            Entrar
-                        </button>
-                    </form>
-
-                    <div class="login-divider">ou</div>
-
-                    <a href="https://wa.me/553287073537?text=Olá%20MordomoPay%21%20Gostaria%20de%20criar%20uma%20conta" 
-                       class="btn btn-secondary btn-block" 
-                       target="_blank">
-                        Criar Conta via WhatsApp
-                    </a>
-
-                    <p class="login-footer">
-                        Ao entrar, você concorda com nossos Termos de Serviço
-                    </p>
-                </div>
-
-                <div class="login-verse">
-                    <p class="verse-text">
-                        "Na casa do sábio há comida escolhida e azeite, mas o tolo tudo desperdiça."
-                    </p>
-                    <p class="verse-reference">Provérbios 21:20</p>
+                    <div class="login-verse">
+                        <p class="verse-text">
+                            "Na casa do sábio há comida escolhida e azeite, mas o tolo tudo desperdiça."
+                        </p>
+                        <p class="verse-reference">Provérbios 21:20</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Dashboard Page -->
-        <div id="dashboard-page" class="page">
-            <!-- Sidebar -->
-            <aside id="sidebar" class="sidebar">
-                <div class="sidebar-header">
-                    <div class="sidebar-logo">
-                        <div class="logo-circle">M</div>
-                        <div>
-                            <h2>MordomoPay</h2>
-                            <p>Gestão Cristã</p>
-                        </div>
-                    </div>
-                </div>
-
-                <nav class="sidebar-nav">
-                    <button class="nav-item active" data-page="dashboard">
-                        <span class="nav-icon">📊</span>
-                        <span class="nav-label">Dashboard</span>
-                    </button>
-                    <button class="nav-item" data-page="transactions">
-                        <span class="nav-icon">💳</span>
-                        <span class="nav-label">Transações</span>
-                    </button>
-                    <button class="nav-item" data-page="goals">
-                        <span class="nav-icon">🎯</span>
-                        <span class="nav-label">Metas</span>
-                    </button>
-                    <button class="nav-item" data-page="tithe">
-                        <span class="nav-icon">🙏</span>
-                        <span class="nav-label">Dízimos</span>
-                    </button>
-                    <button class="nav-item" data-page="tips">
-                        <span class="nav-icon">💡</span>
-                        <span class="nav-label">Dicas</span>
-                    </button>
-                    <button class="nav-item" data-page="reports">
-                        <span class="nav-icon">📈</span>
-                        <span class="nav-label">Relatórios</span>
-                    </button>
-                </nav>
-
-                <div class="sidebar-verse">
-                    <p id="sidebar-verse-text">
-                        "O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."
-                    </p>
-                    <p id="sidebar-verse-ref">Provérbios 10:14</p>
-                </div>
-
-                <div class="sidebar-footer">
-                    <button id="logout-btn" class="btn btn-outline btn-small">
-                        Sair
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Mobile Menu Toggle -->
+        <div id="dashboard-page" class="page hidden">
             <button id="menu-toggle" class="menu-toggle">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
 
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Header -->
-                <header class="header">
-                    <div class="header-left">
-                        <h2 id="page-title">Dashboard</h2>
+            <div class="dashboard-layout">
+                <aside id="sidebar" class="sidebar">
+                    <div class="sidebar-header">
+                        <div class="sidebar-logo">
+                            <div class="logo-circle">M</div>
+                            <div>
+                                <h2>MordomoPay</h2>
+                                <p>Gestão Cristã</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="header-right">
+
+                    <nav>
+                        <button class="nav-item active" data-page="dashboard">
+                            <span class="nav-icon">📊</span>
+                            <span>Dashboard</span>
+                        </button>
+                        <button class="nav-item" data-page="transactions">
+                            <span class="nav-icon">💳</span>
+                            <span>Transações</span>
+                        </button>
+                        <button class="nav-item" data-page="goals">
+                            <span class="nav-icon">🎯</span>
+                            <span>Metas</span>
+                        </button>
+                        <button class="nav-item" data-page="tithe">
+                            <span class="nav-icon">🙏</span>
+                            <span>Dízimos</span>
+                        </button>
+                    </nav>
+
+                    <div class="sidebar-footer">
+                        <button id="logout-btn" class="btn btn-primary btn-block">Sair</button>
+                    </div>
+                </aside>
+
+                <main class="main-content">
+                    <header class="header">
+                        <div>
+                            <h2 id="page-title">Dashboard</h2>
+                        </div>
                         <div class="user-info">
-                            <p id="user-name">Usuário</p>
-                            <p id="user-status">Conectado</p>
-                        </div>
-                        <div class="user-avatar">
-                            <span id="user-initial">U</span>
-                        </div>
-                    </div>
-                </header>
-
-                <!-- Content Area -->
-                <div class="content-area">
-                    <!-- Dashboard Content -->
-                    <div id="dashboard-content" class="page-content active">
-                        <!-- Hero Section -->
-                        <div class="hero-section">
-                            <div class="hero-text">
-                                <h1>Bem-vindo de volta!</h1>
-                                <p>Seu progresso financeiro este mês está excelente. Continue assim!</p>
-                                <div class="hero-stats">
-                                    <div class="stat">
-                                        <p class="stat-label">Receitas</p>
-                                        <p class="stat-value" id="total-income">R$ 5.200</p>
-                                    </div>
-                                    <div class="stat">
-                                        <p class="stat-label">Despesas</p>
-                                        <p class="stat-value" id="total-expenses">R$ 3.850</p>
-                                    </div>
-                                    <div class="stat">
-                                        <p class="stat-label">Saldo</p>
-                                        <p class="stat-value" id="total-balance">R$ 1.350</p>
-                                    </div>
-                                </div>
+                            <div>
+                                <p id="user-name" style="font-weight: 600;">Usuário</p>
+                                <p id="user-phone" style="font-size: 12px; color: var(--text-muted);">Conectado</p>
                             </div>
-                            <div class="hero-image">
-                                <img src="https://via.placeholder.com/200x200?text=Crescimento" alt="Crescimento Financeiro">
+                            <div class="user-avatar">
+                                <span id="user-initial">U</span>
                             </div>
                         </div>
+                    </header>
 
-                        <!-- Quick Stats -->
-                        <div class="stats-grid">
-                            <div class="stat-card health">
-                                <div class="stat-header">
-                                    <h3>Saúde Financeira</h3>
-                                    <span class="icon">❤️</span>
-                                </div>
-                                <p class="stat-big" id="health-score">72%</p>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" id="health-progress" style="width: 72%"></div>
-                                </div>
-                                <p class="stat-footer">Excelente! Você está no caminho certo.</p>
-                            </div>
-
-                            <div class="stat-card savings">
-                                <div class="stat-header">
-                                    <h3>Economia do Mês</h3>
-                                    <span class="icon">📈</span>
-                                </div>
-                                <p class="stat-big" id="monthly-savings">R$ 1.350</p>
-                                <p class="stat-footer">+12% comparado ao mês anterior</p>
-                            </div>
-
-                            <div class="stat-card goals">
-                                <div class="stat-header">
-                                    <h3>Metas Ativas</h3>
-                                    <span class="icon">🎯</span>
-                                </div>
-                                <p class="stat-big" id="active-goals">3</p>
-                                <p class="stat-footer">1 meta já alcançada!</p>
-                            </div>
-                        </div>
-
-                        <!-- Goals and Achievements -->
-                        <div class="two-column-grid">
-                            <div class="card">
-                                <h2>Metas Financeiras</h2>
-                                <div id="goals-list" class="goals-list">
-                                    <!-- Goals will be inserted here -->
-                                </div>
-                            </div>
-
-                            <div class="card">
-                                <h2>Conquistas</h2>
-                                <div id="achievements-grid" class="achievements-grid">
-                                    <!-- Achievements will be inserted here -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Verses and Tips -->
-                        <div class="two-column-grid">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3>📖 Versículo do Dia</h3>
-                                    <div class="nav-buttons">
-                                        <button class="btn-nav" id="prev-verse">Anterior</button>
-                                        <button class="btn-nav" id="next-verse">Próximo</button>
-                                    </div>
-                                </div>
-                                <div id="verse-container" class="verse-container">
-                                    <p class="verse-text" id="daily-verse">
-                                        "Na casa do sábio há comida escolhida e azeite, mas o tolo tudo desperdiça."
-                                    </p>
-                                    <p class="verse-ref" id="verse-ref">Provérbios 21:20</p>
-                                </div>
-                            </div>
-
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3>💡 Dica de Saúde Financeira</h3>
-                                    <div class="nav-buttons">
-                                        <button class="btn-nav" id="prev-tip">Anterior</button>
-                                        <button class="btn-nav" id="next-tip">Próximo</button>
-                                    </div>
-                                </div>
-                                <div id="tip-container" class="tip-container">
-                                    <p class="tip-text" id="daily-tip">
-                                        Registre todas as suas transações para manter controle total do seu dinheiro.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Transactions Content -->
-                    <div id="transactions-content" class="page-content">
-                        <div class="page-header">
-                            <h1>Transações</h1>
-                            <p>Gerencie todas as suas transações financeiras</p>
-                        </div>
-
-                        <!-- Summary Cards -->
-                        <div class="stats-grid">
-                            <div class="stat-card income">
-                                <p class="stat-label">Total de Entradas</p>
-                                <p class="stat-big" id="trans-income">R$ 0</p>
-                            </div>
-                            <div class="stat-card expense">
-                                <p class="stat-label">Total de Saídas</p>
-                                <p class="stat-big" id="trans-expenses">R$ 0</p>
-                            </div>
-                            <div class="stat-card balance">
-                                <p class="stat-label">Saldo</p>
-                                <p class="stat-big" id="trans-balance">R$ 0</p>
-                            </div>
-                        </div>
-
-                        <!-- Filters and Actions -->
-                        <div class="card">
-                            <div class="filter-header">
-                                <h3>Filtros</h3>
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary" id="add-transaction-btn">
-                                        ➕ Nova Transação
-                                    </button>
-                                    <button class="btn btn-outline" id="export-btn">
-                                        ⬇️ Exportar
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="filter-grid">
-                                <div class="form-group">
-                                    <label>Tipo</label>
-                                    <select id="filter-type">
-                                        <option value="all">Todas</option>
-                                        <option value="entrada">Entradas</option>
-                                        <option value="saida">Saídas</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>Categoria</label>
-                                    <select id="filter-category">
-                                        <option value="all">Todas</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Transactions Table -->
-                        <div class="card table-card">
-                            <div class="table-wrapper">
-                                <table id="transactions-table" class="transactions-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Descrição</th>
-                                            <th>Categoria</th>
-                                            <th>Pagador/Recebedor</th>
-                                            <th>Data</th>
-                                            <th>Valor</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="transactions-tbody">
-                                        <!-- Transactions will be inserted here -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Goals Content -->
-                    <div id="goals-content" class="page-content">
-                        <div class="page-header">
-                            <h1>Metas Financeiras</h1>
-                            <p>Defina e acompanhe suas metas financeiras</p>
-                        </div>
-
-                        <div class="card">
-                            <div class="filter-header">
-                                <h3>Suas Metas</h3>
-                                <button class="btn btn-primary" id="add-goal-btn">
-                                    ➕ Nova Meta
-                                </button>
-                            </div>
-                            <div id="goals-full-list" class="goals-full-list">
-                                <!-- Goals will be inserted here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tithe Content -->
-                    <div id="tithe-content" class="page-content">
-                        <div class="page-header">
-                            <h1>Dízimos</h1>
-                            <p>Registre e acompanhe seus dízimos</p>
-                        </div>
-
+                    <div id="dashboard-content">
                         <div class="stats-grid">
                             <div class="stat-card">
-                                <p class="stat-label">Total de Dízimos</p>
-                                <p class="stat-big" id="total-tithe">R$ 0</p>
+                                <h3>Receitas</h3>
+                                <p class="stat-big" id="total-income">R$ 0,00</p>
                             </div>
                             <div class="stat-card">
-                                <p class="stat-label">Dízimos este Mês</p>
-                                <p class="stat-big" id="month-tithe">R$ 0</p>
+                                <h3>Despesas</h3>
+                                <p class="stat-big" id="total-expenses">R$ 0,00</p>
                             </div>
                             <div class="stat-card">
-                                <p class="stat-label">Meses Consecutivos</p>
-                                <p class="stat-big" id="consecutive-months">0</p>
+                                <h3>Saldo</h3>
+                                <p class="stat-big" id="total-balance">R$ 0,00</p>
                             </div>
                         </div>
 
                         <div class="card">
-                            <div class="filter-header">
-                                <h3>Registros de Dízimos</h3>
-                                <button class="btn btn-primary" id="add-tithe-btn">
-                                    ➕ Novo Dízimo
-                                </button>
-                            </div>
-                            <div id="tithe-list" class="tithe-list">
-                                <!-- Tithe records will be inserted here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tips Content -->
-                    <div id="tips-content" class="page-content">
-                        <div class="page-header">
-                            <h1>Dicas de Saúde Financeira</h1>
-                            <p>Aprenda dicas valiosas para melhorar sua gestão financeira</p>
-                        </div>
-
-                        <div id="tips-grid" class="tips-grid">
-                            <!-- Tips will be inserted here -->
-                        </div>
-                    </div>
-
-                    <!-- Reports Content -->
-                    <div id="reports-content" class="page-content">
-                        <div class="page-header">
-                            <h1>Relatórios</h1>
-                            <p>Análise detalhada de suas finanças</p>
+                            <h3>✨ Bem-vindo ao MordomoPay!</h3>
+                            <p style="color: var(--text-muted); margin-top: 10px;">
+                                Sistema de gestão financeira integrado com WhatsApp, baseado em princípios cristãos de mordomia.
+                            </p>
                         </div>
 
                         <div class="card">
-                            <h2>Resumo Financeiro</h2>
-                            <div id="reports-summary" class="reports-summary">
-                                <!-- Reports will be inserted here -->
-                            </div>
+                            <h3>📖 Versículo do Dia</h3>
+                            <p style="color: var(--text); margin-top: 15px; font-style: italic; line-height: 1.6;">
+                                "Trazei todos os dízimos à casa do tesouro, para que haja mantimento na minha casa, 
+                                e depois fazei prova de mim, diz o Senhor dos Exércitos, se eu não vos abrir as janelas 
+                                do céu e não derramar sobre vós uma bênção tal, que dela vos advenha a maior abastança."
+                            </p>
+                            <p style="color: var(--text-muted); margin-top: 10px; font-weight: 600;">
+                                Malaquias 3:10
+                            </p>
                         </div>
                     </div>
-                </div>
-            </main>
-        </div>
-    </div>
 
-    <!-- Modal for Add/Edit Transaction -->
-    <div id="transaction-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-title">Nova Transação</h2>
-                <button class="modal-close">&times;</button>
+                    <div id="transactions-content" class="hidden">
+                        <div class="card">
+                            <h3>💳 Transações</h3>
+                            <p style="color: var(--text-muted); margin-top: 10px;">
+                                Gerencie suas transações financeiras registradas via WhatsApp.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="goals-content" class="hidden">
+                        <div class="card">
+                            <h3>🎯 Metas Financeiras</h3>
+                            <p style="color: var(--text-muted); margin-top: 10px;">
+                                Defina e acompanhe suas metas financeiras.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div id="tithe-content" class="hidden">
+                        <div class="card">
+                            <h3>🙏 Dízimos e Ofertas</h3>
+                            <p style="color: var(--text-muted); margin-top: 10px;">
+                                Acompanhe seus dízimos e ofertas.
+                            </p>
+                        </div>
+                    </div>
+                </main>
             </div>
-            <form id="transaction-form" class="modal-form">
-                <div class="form-group">
-                    <label for="trans-description">Descrição</label>
-                    <input type="text" id="trans-description" required>
-                </div>
-                <div class="form-group">
-                    <label for="trans-amount">Valor</label>
-                    <input type="number" id="trans-amount" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="trans-type">Tipo</label>
-                    <select id="trans-type" required>
-                        <option value="entrada">Entrada</option>
-                        <option value="saida">Saída</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="trans-category">Categoria</label>
-                    <select id="trans-category" required>
-                        <!-- Categories will be inserted here -->
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="trans-payee">Pagador/Recebedor</label>
-                    <input type="text" id="trans-payee" required>
-                </div>
-                <div class="form-group">
-                    <label for="trans-date">Data</label>
-                    <input type="date" id="trans-date" required>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline modal-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- Modal for Add/Edit Goal -->
-    <div id="goal-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="goal-modal-title">Nova Meta</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <form id="goal-form" class="modal-form">
-                <div class="form-group">
-                    <label for="goal-name">Nome da Meta</label>
-                    <input type="text" id="goal-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="goal-target">Valor Alvo</label>
-                    <input type="number" id="goal-target" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="goal-current">Valor Atual</label>
-                    <input type="number" id="goal-current" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="goal-category">Categoria</label>
-                    <input type="text" id="goal-category" required>
-                </div>
-                <div class="form-group">
-                    <label for="goal-deadline">Prazo</label>
-                    <input type="date" id="goal-deadline" required>
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline modal-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <script>
+        // Configuração Supabase
+        const SUPABASE_URL = 'https://fetimotrijqyswrfoyzz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZldGltb3RyaWpxeXN3cmZveXp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTk5MTksImV4cCI6MjA3NTA5NTkxOX0.Wkiu887LiK1l3k4vHpoRB-ODsrxeUF_mJINJmJ2Xz4I';
 
-    <!-- Modal for Add/Edit Tithe -->
-    <div id="tithe-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="tithe-modal-title">Novo Dízimo</h2>
-                <button class="modal-close">&times;</button>
-            </div>
-            <form id="tithe-form" class="modal-form">
-                <div class="form-group">
-                    <label for="tithe-amount">Valor</label>
-                    <input type="number" id="tithe-amount" step="0.01" required>
-                </div>
-                <div class="form-group">
-                    <label for="tithe-date">Data</label>
-                    <input type="date" id="tithe-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="tithe-description">Descrição</label>
-                    <input type="text" id="tithe-description">
-                </div>
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline modal-cancel">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        let currentUser = null;
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast hidden"></div>
+        // Utility Functions
+        function showLoader() {
+            document.getElementById('loader').classList.remove('hidden');
+        }
 
-    <!-- Scripts -->
-    <script src="js/utils/logger.js"></script>
-    <script src="js/utils/formatter.js"></script>
-    <script src="js/utils/validators.js"></script>
-    <script src="js/supabase-client.js"></script>
-    <script src="js/storage.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/pages/dashboard.js"></script>
-    <script src="js/pages/transactions.js"></script>
-    <script src="js/pages/goals.js"></script>
-    <script src="js/pages/tithe.js"></script>
-    <script src="js/pages/tips.js"></script>
-    <script src="js/pages/reports.js"></script>
-    <script src="js/app.js"></script>
+        function hideLoader() {
+            document.getElementById('loader').classList.add('hidden');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+        }
+
+        function showContent(contentId) {
+            document.querySelectorAll('[id$="-content"]').forEach(c => c.classList.add('hidden'));
+            document.getElementById(contentId).classList.remove('hidden');
+        }
+
+        function formatPhone(phone) {
+            const cleaned = phone.replace(/\D/g, '');
+            if (cleaned.length === 13) {
+                return `+${cleaned.slice(0, 2)} (${cleaned.slice(2, 4)}) ${cleaned.slice(4, 9)}-${cleaned.slice(9)}`;
+            }
+            return phone;
+        }
+
+        // Login com tabela usuarios
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const celular = document.getElementById('celular').value.trim();
+            const senha = document.getElementById('password').value;
+
+            showLoader();
+
+            try {
+                console.log('Tentando login com celular:', celular);
+
+                // Busca usuário na tabela usuarios
+                const { data: usuarios, error } = await supabaseClient
+                    .from('usuarios')
+                    .select('*')
+                    .eq('celular', celular)
+                    .eq('senha', senha)
+                    .eq('status', 'ativo')
+                    .single();
+
+                if (error) {
+                    console.error('Erro ao buscar usuário:', error);
+                    throw new Error('Celular ou senha incorretos');
+                }
+
+                if (!usuarios) {
+                    throw new Error('Usuário não encontrado ou inativo');
+                }
+
+                console.log('Login bem-sucedido:', usuarios);
+
+                currentUser = usuarios;
+                
+                // Atualiza UI
+                document.getElementById('user-name').textContent = usuarios.nome;
+                document.getElementById('user-phone').textContent = formatPhone(usuarios.celular);
+                document.getElementById('user-initial').textContent = usuarios.nome[0].toUpperCase();
+
+                showPage('dashboard-page');
+                showToast(`Bem-vindo(a), ${usuarios.nome}!`, 'success');
+                
+            } catch (error) {
+                console.error('Erro no login:', error);
+                showToast(error.message || 'Erro ao fazer login', 'error');
+            } finally {
+                hideLoader();
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            if (!confirm('Deseja sair?')) return;
+
+            currentUser = null;
+            showPage('login-page');
+            showToast('Logout realizado com sucesso!', 'success');
+        });
+
+        // Navegação
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const page = e.currentTarget.getAttribute('data-page');
+                
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                
+                const titles = {
+                    'dashboard': 'Dashboard',
+                    'transactions': 'Transações',
+                    'goals': 'Metas',
+                    'tithe': 'Dízimos'
+                };
+                
+                document.getElementById('page-title').textContent = titles[page];
+                showContent(page + '-content');
+
+                // Fecha sidebar em mobile
+                document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+
+        // Menu toggle mobile
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+
+        // Fecha sidebar ao clicar fora (mobile)
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        console.log('MordomoPay iniciado e conectado ao Supabase');
+    </script>
 </body>
 </html>
