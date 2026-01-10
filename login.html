@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="background-color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem;">
@@ -28,16 +29,28 @@
                 <input type="password" id="password" placeholder="••••••••" required>
             </div>
             <div id="login-error" style="color: var(--destructive); font-size: 0.875rem; margin-bottom: 1rem; display: none;"></div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;" id="login-submit">Entrar</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="login-submit">Entrar</button>
         </form>
 
+        <div class="login-divider"><span>ou</span></div>
+        
+        <button type="button" class="btn btn-whatsapp" onclick="redirectToWhatsAppSignup()">
+            <i class="fab fa-whatsapp"></i> Cadastre-se via WhatsApp
+        </button>
+
         <div style="text-align: center; margin-top: 1.5rem;">
-            <p class="text-muted-foreground" style="font-size: 0.875rem;">Ainda não tem uma conta? <a href="#" style="color: var(--primary); font-weight: 600;">Cadastre-se</a></p>
+            <p class="text-muted-foreground" style="font-size: 0.875rem;">Dúvidas? Entre em contato com o suporte.</p>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
+        function redirectToWhatsAppSignup() {
+            const phone = "5532987073537";
+            const message = encodeURIComponent("olá quero me cadastrar no Mordomo Pay!");
+            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+        }
+
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const phone = document.getElementById('phone').value;
