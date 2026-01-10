@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MordomoPay - Gestão Cristã</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-box">M</div>
+                    <div class="logo-text">
+                        <h1>MordomoPay</h1>
+                        <p>Gestão Cristã</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item active">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="transactions.html" class="nav-item">
+                    <span>💳</span> Transações
+                </a>
+                <a href="goals.html" class="nav-item">
+                    <span>🎯</span> Metas
+                </a>
+                <a href="tithe.html" class="nav-item">
+                    <span>🙏</span> Dízimos
+                </a>
+                <a href="tips.html" class="nav-item">
+                    <span>💡</span> Dicas
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span>📈</span> Relatórios
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."</p>
+                <span>Provérbios 10:14</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="header-left">
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
+                    <h2 class="md-visible">Bem-vindo ao MordomoPay</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <p class="user-name" id="user-display-name">Usuário</p>
+                        <p class="user-status">Conectado</p>
+                    </div>
+                    <div class="user-avatar">U</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Hero Section -->
+                <div class="hero-card">
+                    <div class="hero-content">
+                        <h2>Bem-vindo de volta!</h2>
+                        <p>Seu progresso financeiro este mês está excelente. Continue assim!</p>
+                        <div class="hero-stats">
+                            <div class="stat-item">
+                                <p>Receitas</p>
+                                <p id="hero-income">R$ 0,00</p>
+                            </div>
+                            <div class="stat-item">
+                                <p>Despesas</p>
+                                <p id="hero-expense">R$ 0,00</p>
+                            </div>
+                            <div class="stat-item">
+                                <p>Saldo</p>
+                                <p id="hero-balance" class="text-accent">R$ 0,00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-image">
+                        <img src="images/hero-financial-growth.png" alt="Crescimento Financeiro">
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid-3">
+                    <div class="card stat-card">
+                        <div class="flex-between">
+                            <h3>Saúde Financeira</h3>
+                            <span>🧡</span>
+                        </div>
+                        <p class="value" id="health-percentage">0%</p>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="health-bar" style="width: 0%"></div>
+                        </div>
+                        <p class="subtext">Excelente! Você está no caminho certo.</p>
+                    </div>
+                    <div class="card stat-card secondary">
+                        <div class="flex-between">
+                            <h3>Economia do Mês</h3>
+                            <span>📈</span>
+                        </div>
+                        <p class="value" id="month-savings">R$ 0,00</p>
+                        <p class="subtext">+12% comparado ao mês anterior</p>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="flex-between">
+                            <h3>Metas Ativas</h3>
+                            <span>🎯</span>
+                        </div>
+                        <p class="value" id="active-goals-count">0</p>
+                        <p class="subtext" id="goals-summary">Nenhuma meta alcançada ainda.</p>
+                    </div>
+                </div>
+
+                <!-- Bottom Sections -->
+                <div class="grid-3">
+                    <div class="card" style="grid-column: span 2;">
+                        <h3 class="mb-4">Metas Financeiras</h3>
+                        <div id="goals-list-mini">
+                            <!-- Metas serão inseridas aqui via JS -->
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="mb-4">Conquistas</h3>
+                        <div id="achievements-list">
+                            <!-- Conquistas serão inseridas aqui via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MordomoPay</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body style="background-color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 100vh;">
+    <div class="card" style="width: 100%; max-width: 400px; padding: 2.5rem;">
+        <div class="text-center mb-8">
+            <div class="logo-box" style="margin: 0 auto 1rem; width: 60px; height: 60px; font-size: 2rem;">M</div>
+            <h1 class="serif" style="font-size: 1.75rem;">MordomoPay</h1>
+            <p class="text-muted-foreground">Gestão Financeira Cristã</p>
+        </div>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="phone">Celular</label>
+                <input type="tel" id="phone" placeholder="(00) 00000-0000" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem; margin-top: 1rem;">
+                Entrar
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p class="text-muted-foreground" style="font-size: 0.875rem;">
+                Ainda não tem uma conta? <a href="#" class="text-primary" style="font-weight: 600; text-decoration: none;">Cadastre-se</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            
+            // Simulação de login para demonstração, integração real em auth.js
+            console.log('Tentativa de login:', phone);
+            
+            // Redirecionar para o dashboard
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>

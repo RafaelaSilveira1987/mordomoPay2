@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dízimos - MordomoPay</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-box">M</div>
+                    <div class="logo-text">
+                        <h1>MordomoPay</h1>
+                        <p>Gestão Cristã</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="transactions.html" class="nav-item">
+                    <span>💳</span> Transações
+                </a>
+                <a href="goals.html" class="nav-item">
+                    <span>🎯</span> Metas
+                </a>
+                <a href="tithe.html" class="nav-item active">
+                    <span>🙏</span> Dízimos
+                </a>
+                <a href="tips.html" class="nav-item">
+                    <span>💡</span> Dicas
+                </a>
+                <a href="reports.html" class="nav-item">
+                    <span>📈</span> Relatórios
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."</p>
+                <span>Provérbios 10:14</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="header-left">
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
+                    <h2 class="md-visible">Dízimos e Ofertas</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <p class="user-name">Usuário</p>
+                        <p class="user-status">Conectado</p>
+                    </div>
+                    <div class="user-avatar">U</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="mb-8">
+                    <h1 class="serif">Dízimos e Ofertas</h1>
+                    <p class="text-muted-foreground">Sua fidelidade e generosidade transformam vidas</p>
+                </div>
+
+                <!-- Calculadora -->
+                <div class="card mb-8" style="border-top: 4px solid var(--primary);">
+                    <h2 class="serif mb-6">Calculadora de Dízimo</h2>
+                    <div class="grid-3" style="grid-template-columns: 1fr 1fr; margin-bottom: 1.5rem;">
+                        <div class="form-group">
+                            <label>Renda Mensal</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="number" id="monthly-income" value="0">
+                                <span style="padding: 0.5rem; background: var(--muted); border-radius: 8px;">R$</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Percentual de Dízimo</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="number" id="tithe-percentage" value="10">
+                                <span style="padding: 0.5rem; background: var(--muted); border-radius: 8px;">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 1.5rem; background: rgba(212, 175, 55, 0.1); border: 1px solid var(--accent); border-radius: 8px;">
+                        <p class="text-muted-foreground" style="font-size: 0.875rem;">Dízimo Calculado</p>
+                        <p class="value text-primary" id="calculated-tithe" style="font-size: 2.5rem;">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <!-- Resumo -->
+                <div class="grid-3">
+                    <div class="card stat-card">
+                        <h3>Total de Dízimos</h3>
+                        <p class="value text-primary" id="total-tithes">R$ 0,00</p>
+                    </div>
+                    <div class="card stat-card secondary">
+                        <h3>Total de Ofertas</h3>
+                        <p class="value text-secondary" id="total-offerings">R$ 0,00</p>
+                    </div>
+                    <div class="card stat-card" style="border-left-color: var(--accent);">
+                        <h3>Total Doado</h3>
+                        <p class="value" style="color: var(--accent);" id="total-given">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <!-- Histórico e Versículos -->
+                <div class="grid-3" style="grid-template-columns: 1.5fr 1fr;">
+                    <div>
+                        <h2 class="serif mb-4">Histórico</h2>
+                        <div id="tithe-history" class="space-y-4">
+                            <!-- Histórico via JS -->
+                        </div>
+                    </div>
+                    <div>
+                        <h2 class="serif mb-4">Versículos</h2>
+                        <div id="verses-list" class="space-y-4">
+                            <!-- Versículos via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-2">
+                    <button class="btn btn-primary" id="btn-new-tithe">
+                        <span>+</span> Registrar Dízimo/Oferta
+                    </button>
+                    <button class="btn btn-outline">
+                        <span>📈</span> Relatório Anual
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Novo Dízimo -->
+    <div id="modal-tithe" class="modal" style="display: none;">
+        <div class="modal-content card">
+            <h3 class="serif mb-4" id="tithe-modal-title">Registrar Dízimo/Oferta</h3>
+            <form id="form-tithe">
+                <input type="hidden" id="tithe-id">
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="tithe-description" placeholder="Ex: Dízimo Janeiro, Oferta Especial" required>
+                </div>
+                <div class="grid-3" style="grid-template-columns: 1fr 1fr; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" step="0.01" id="tithe-amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo</label>
+                        <select id="tithe-type" required>
+                            <option value="dizimo">Dízimo</option>
+                            <option value="oferta">Oferta</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="tithe-date" required>
+                </div>
+                <div class="form-group">
+                    <label>Status de Pagamento</label>
+                    <select id="tithe-status">
+                        <option value="pago">Pago Integral</option>
+                        <option value="parcial">Parcial</option>
+                        <option value="pendente">Pendente</option>
+                    </select>
+                </div>
+                <div id="partial-amount-group" class="form-group" style="display: none;">
+                    <label>Valor Já Pago (R$)</label>
+                    <input type="number" step="0.01" id="tithe-paid-amount" value="0">
+                </div>
+                <div class="flex-between mt-4">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-tithe">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .modal-content {
+            width: 100%;
+            max-width: 500px;
+        }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .verse-card {
+            background: linear-gradient(to bottom right, rgba(42, 75, 141, 0.05), rgba(85, 107, 47, 0.05));
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .verse-text { font-style: italic; font-size: 0.875rem; margin-bottom: 0.5rem; }
+        .verse-ref { font-weight: bold; font-size: 0.75rem; color: var(--muted-foreground); }
+    </style>
+
+    <script src="js/auth.js"></script>
+    <script src="js/tithe.js"></script>
+</body>
+</html>

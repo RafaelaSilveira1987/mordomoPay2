@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - MordomoPay</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-box">M</div>
+                    <div class="logo-text">
+                        <h1>MordomoPay</h1>
+                        <p>Gestão Cristã</p>
+                    </div>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-item">
+                    <span>📊</span> Dashboard
+                </a>
+                <a href="transactions.html" class="nav-item">
+                    <span>💳</span> Transações
+                </a>
+                <a href="goals.html" class="nav-item">
+                    <span>🎯</span> Metas
+                </a>
+                <a href="tithe.html" class="nav-item">
+                    <span>🙏</span> Dízimos
+                </a>
+                <a href="tips.html" class="nav-item">
+                    <span>💡</span> Dicas
+                </a>
+                <a href="reports.html" class="nav-item active">
+                    <span>📈</span> Relatórios
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."</p>
+                <span>Provérbios 10:14</span>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header>
+                <div class="header-left">
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
+                    <h2 class="md-visible">Relatórios Financeiros</h2>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <p class="user-name">Usuário</p>
+                        <p class="user-status">Conectado</p>
+                    </div>
+                    <div class="user-avatar">U</div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <div class="mb-8">
+                    <h1 class="serif">Relatórios</h1>
+                    <p class="text-muted-foreground">Análise detalhada da sua mordomia financeira</p>
+                </div>
+
+                <div class="grid-3" style="grid-template-columns: 2fr 1fr;">
+                    <div class="card">
+                        <h3 class="serif mb-4">Fluxo de Caixa (6 meses)</h3>
+                        <canvas id="cashflow-chart" height="200"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 class="serif mb-4">Gastos por Categoria</h3>
+                        <canvas id="category-chart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid-3 mt-8">
+                    <div class="card">
+                        <h3 class="serif mb-4">Resumo Anual</h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Mês</th>
+                                        <th>Receitas</th>
+                                        <th>Despesas</th>
+                                        <th>Saldo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>Janeiro</td><td>R$ 5.200</td><td>R$ 3.850</td><td class="text-green">R$ 1.350</td></tr>
+                                    <tr><td>Dezembro</td><td>R$ 6.100</td><td>R$ 4.200</td><td class="text-green">R$ 1.900</td></tr>
+                                    <tr><td>Novembro</td><td>R$ 5.200</td><td>R$ 3.900</td><td class="text-green">R$ 1.300</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gráfico de Fluxo de Caixa
+            const ctx1 = document.getElementById('cashflow-chart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan'],
+                    datasets: [{
+                        label: 'Receitas',
+                        data: [4800, 5000, 5200, 5200, 6100, 5200],
+                        borderColor: '#2A4B8D',
+                        tension: 0.4,
+                        fill: false
+                    }, {
+                        label: 'Despesas',
+                        data: [3500, 3700, 3800, 3900, 4200, 3850],
+                        borderColor: '#ef4444',
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // Gráfico de Categorias
+            const ctx2 = document.getElementById('category-chart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Moradia', 'Alimentação', 'Transporte', 'Dízimo', 'Outros'],
+                    datasets: [{
+                        data: [1500, 800, 400, 520, 630],
+                        backgroundColor: ['#2A4B8D', '#556B2F', '#D4AF37', '#1A2F5A', '#71717a']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
