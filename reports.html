@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="app-container">
@@ -42,6 +43,9 @@
                 <a href="reports.html" class="nav-item active">
                     <span>📈</span> Relatórios
                 </a>
+                <a href="#" class="nav-item" id="logout-btn" style="margin-top: auto; color: var(--destructive);">
+                    <span>🚪</span> Sair
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <p>"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."</p>
@@ -73,7 +77,7 @@
 
                 <div class="grid-3" style="grid-template-columns: 2fr 1fr;">
                     <div class="card">
-                        <h3 class="serif mb-4">Fluxo de Caixa (6 meses)</h3>
+                        <h3 class="serif mb-4">Fluxo de Caixa (Mensal)</h3>
                         <canvas id="cashflow-chart" height="200"></canvas>
                     </div>
                     <div class="card">
@@ -82,77 +86,125 @@
                     </div>
                 </div>
 
-                <div class="grid-3 mt-8">
-                    <div class="card">
-                        <h3 class="serif mb-4">Resumo Anual</h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Mês</th>
-                                        <th>Receitas</th>
-                                        <th>Despesas</th>
-                                        <th>Saldo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td>Janeiro</td><td>R$ 5.200</td><td>R$ 3.850</td><td class="text-green">R$ 1.350</td></tr>
-                                    <tr><td>Dezembro</td><td>R$ 6.100</td><td>R$ 4.200</td><td class="text-green">R$ 1.900</td></tr>
-                                    <tr><td>Novembro</td><td>R$ 5.200</td><td>R$ 3.900</td><td class="text-green">R$ 1.300</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="card mt-8">
+                    <h3 class="serif mb-4">Resumo por Mês</h3>
+                    <div class="table-container">
+                        <table id="monthly-summary-table">
+                            <thead>
+                                <tr>
+                                    <th>Mês</th>
+                                    <th>Receitas</th>
+                                    <th>Despesas</th>
+                                    <th>Saldo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dados reais serão inseridos aqui -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <script src="js/auth.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Gráfico de Fluxo de Caixa
-            const ctx1 = document.getElementById('cashflow-chart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: ['Ago', 'Set', 'Out', 'Nov', 'Dez', 'Jan'],
-                    datasets: [{
-                        label: 'Receitas',
-                        data: [4800, 5000, 5200, 5200, 6100, 5200],
-                        borderColor: '#2A4B8D',
-                        tension: 0.4,
-                        fill: false
-                    }, {
-                        label: 'Despesas',
-                        data: [3500, 3700, 3800, 3900, 4200, 3850],
-                        borderColor: '#ef4444',
-                        tension: 0.4,
-                        fill: false
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'bottom' } }
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await Auth.getUser();
+            if (!user) return;
+
+            // Buscar todas as transações do usuário
+            const { data: transactions, error } = await supabaseClient
+                .from('transacoes')
+                .select('*, categoria_trasacoes(descricao)')
+                .eq('usuario_id', user.id);
+
+            if (error) {
+                console.error('Erro ao buscar dados para relatórios:', error);
+                return;
+            }
+
+            processAndRenderCharts(transactions);
+            renderMonthlyTable(transactions);
+        });
+
+        function processAndRenderCharts(transactions) {
+            const months = {};
+            const categories = {};
+
+            transactions.forEach(t => {
+                const valor = parseFloat(t.valor);
+                const mes = t.mes || new Date(t.data).toLocaleString('pt-BR', { month: 'long' });
+                
+                // Processar meses
+                if (!months[mes]) months[mes] = { in: 0, out: 0 };
+                if (t.tipo === 'entrada') months[mes].in += valor;
+                else months[mes].out += valor;
+
+                // Processar categorias (apenas saídas)
+                if (t.tipo === 'saida') {
+                    const cat = t.categoria_trasacoes ? t.categoria_trasacoes.descricao : 'Outros';
+                    categories[cat] = (categories[cat] || 0) + valor;
                 }
             });
 
-            // Gráfico de Categorias
-            const ctx2 = document.getElementById('category-chart').getContext('2d');
-            new Chart(ctx2, {
+            // Renderizar Gráfico de Fluxo de Caixa
+            const monthLabels = Object.keys(months);
+            const inData = monthLabels.map(m => months[m].in);
+            const outData = monthLabels.map(m => months[m].out);
+
+            new Chart(document.getElementById('cashflow-chart'), {
+                type: 'bar',
+                data: {
+                    labels: monthLabels,
+                    datasets: [
+                        { label: 'Receitas', data: inData, backgroundColor: '#2A4B8D' },
+                        { label: 'Despesas', data: outData, backgroundColor: '#ef4444' }
+                    ]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Renderizar Gráfico de Categorias
+            new Chart(document.getElementById('category-chart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Moradia', 'Alimentação', 'Transporte', 'Dízimo', 'Outros'],
+                    labels: Object.keys(categories),
                     datasets: [{
-                        data: [1500, 800, 400, 520, 630],
-                        backgroundColor: ['#2A4B8D', '#556B2F', '#D4AF37', '#1A2F5A', '#71717a']
+                        data: Object.values(categories),
+                        backgroundColor: ['#2A4B8D', '#D4AF37', '#556B2F', '#1A2F5A', '#71717a', '#ef4444']
                     }]
                 },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { position: 'bottom' } }
-                }
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
-        });
+        }
+
+        function renderMonthlyTable(transactions) {
+            const summary = {};
+            transactions.forEach(t => {
+                const mes = t.mes || new Date(t.data).toLocaleString('pt-BR', { month: 'long' });
+                if (!summary[mes]) summary[mes] = { in: 0, out: 0 };
+                if (t.tipo === 'entrada') summary[mes].in += parseFloat(t.valor);
+                else summary[mes].out += parseFloat(t.valor);
+            });
+
+            const tbody = document.querySelector('#monthly-summary-table tbody');
+            tbody.innerHTML = Object.keys(summary).map(mes => {
+                const s = summary[mes];
+                const saldo = s.in - s.out;
+                return `
+                    <tr>
+                        <td>${mes.charAt(0).toUpperCase() + mes.slice(1)}</td>
+                        <td class="text-green">R$ ${s.in.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td class="text-red">R$ ${s.out.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                        <td style="font-weight: bold;" class="${saldo >= 0 ? 'text-green' : 'text-red'}">
+                            R$ ${saldo.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
     </script>
 </body>
 </html>

@@ -42,6 +42,9 @@
                 <a href="reports.html" class="nav-item">
                     <span>📈</span> Relatórios
                 </a>
+                <a href="#" class="nav-item" id="logout-btn" style="margin-top: auto; color: var(--destructive);">
+                    <span>🚪</span> Sair
+                </a>
             </nav>
             <div class="sidebar-footer">
                 <p>"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."</p>
@@ -71,37 +74,75 @@
                     <p class="text-muted-foreground">Princípios bíblicos para uma vida financeira equilibrada</p>
                 </div>
 
-                <div class="grid-3">
-                    <div class="card">
-                        <img src="images/financial-wisdom.png" alt="Sabedoria" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
-                        <h3 class="serif mb-2">O Princípio da Primazia</h3>
-                        <p style="font-size: 0.875rem; color: var(--muted-foreground);">Honrar a Deus com as primícias não é sobre o valor, mas sobre o lugar que Ele ocupa em seu coração e em seu orçamento.</p>
-                    </div>
-                    <div class="card">
-                        <img src="images/goals-achievement.png" alt="Metas" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
-                        <h3 class="serif mb-2">Planejamento e Diligência</h3>
-                        <p style="font-size: 0.875rem; color: var(--muted-foreground);">"Os planos do diligente levam à fartura." Estabelecer metas é uma forma de exercer mordomia sobre o futuro que Deus lhe confiou.</p>
-                    </div>
-                    <div class="card">
-                        <img src="images/giving-and-stewardship.png" alt="Generosidade" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
-                        <h3 class="serif mb-2">Generosidade Transforma</h3>
-                        <p style="font-size: 0.875rem; color: var(--muted-foreground);">A generosidade quebra o poder do materialismo. Quem dá com alegria experimenta a liberdade de não ser escravo do dinheiro.</p>
-                    </div>
+                <div class="grid-3" id="tips-container">
+                    <!-- Dicas serão carregadas aqui -->
                 </div>
 
                 <div class="card mt-8" style="background: var(--primary); color: white;">
                     <div style="display: flex; gap: 2rem; align-items: center;">
                         <div style="font-size: 3rem;">📖</div>
-                        <div>
+                        <div id="daily-verse-container">
                             <h3 class="serif mb-2">Versículo do Dia</h3>
-                            <p style="font-style: italic; opacity: 0.9;">"Pois onde estiver o seu tesouro, ali também estará o seu coração."</p>
-                            <p style="font-size: 0.75rem; margin-top: 0.5rem; font-weight: bold;">Mateus 6:21</p>
+                            <p id="verse-text" style="font-style: italic; opacity: 0.9;">Carregando sabedoria...</p>
+                            <p id="verse-ref" style="font-size: 0.75rem; margin-top: 0.5rem; font-weight: bold;"></p>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
     <script src="js/auth.js"></script>
+    <script>
+        const defaultTips = [
+            { title: "O Princípio da Primazia", desc: "Honrar a Deus com as primícias não é sobre o valor, mas sobre o lugar que Ele ocupa em seu coração.", img: "images/financial-wisdom.png" },
+            { title: "Planejamento e Diligência", desc: "Os planos do diligente levam à fartura. Estabelecer metas é uma forma de exercer mordomia.", img: "images/goals-achievement.png" },
+            { title: "Generosidade Transforma", desc: "A generosidade quebra o poder do materialismo. Quem dá com alegria experimenta a liberdade.", img: "images/giving-and-stewardship.png" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadTips();
+            loadDailyVerse();
+        });
+
+        function loadTips() {
+            const container = document.getElementById('tips-container');
+            container.innerHTML = defaultTips.map(tip => `
+                <div class="card">
+                    <img src="${tip.img}" alt="${tip.title}" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
+                    <h3 class="serif mb-2">${tip.title}</h3>
+                    <p style="font-size: 0.875rem; color: var(--muted-foreground);">${tip.desc}</p>
+                </div>
+            `).join('');
+        }
+
+        async function loadDailyVerse() {
+            const verseText = document.getElementById('verse-text');
+            const verseRef = document.getElementById('verse-ref');
+
+            try {
+                // Usando a API gratuita 'A Bíblia Digital' ou similar
+                // Para garantir funcionamento offline/sem API, temos um fallback
+                const response = await fetch('https://bible-api.com/random?translation=almeida');
+                if (response.ok) {
+                    const data = await response.json();
+                    verseText.textContent = `"${data.text.trim()}"`;
+                    verseRef.textContent = data.reference;
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                // Fallback: Versículos de Sabedoria Financeira
+                const fallbacks = [
+                    { t: "Pois onde estiver o seu tesouro, ali também estará o seu coração.", r: "Mateus 6:21" },
+                    { t: "O que o sábio acumula com a mão é melhor que o que o tolo desperdiça.", r: "Provérbios 10:14" },
+                    { t: "Honra ao Senhor com os teus bens e com as primícias de toda a tua renda.", r: "Provérbios 3:9" }
+                ];
+                const today = new Date().getDate() % fallbacks.length;
+                verseText.textContent = `"${fallbacks[today].t}"`;
+                verseRef.textContent = fallbacks[today].r;
+            }
+        }
+    </script>
 </body>
 </html>

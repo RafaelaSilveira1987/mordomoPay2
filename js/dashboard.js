@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     await updateDashboardStats();
     await renderMiniGoals();
-    renderAchievements();
+    await renderAchievements();
 });
 
 async function updateDashboardStats() {
@@ -85,20 +85,29 @@ async function renderMiniGoals() {
     }).join('');
 }
 
-function renderAchievements() {
-    const container = document.getElementById('achievements-list');
-    const achievements = [
-        { icon: '🌱', title: 'Primeiro Passo', desc: 'Registrou sua primeira transação' },
-        { icon: '🎯', title: 'Foco Total', desc: 'Completou sua primeira meta' },
-        { icon: '🙏', title: 'Fiel no Pouco', desc: 'Dizimista por 3 meses seguidos' }
-    ];
+async function renderAchievements() {
+    const user = await Auth.getUser();
+    if (!user) return;
 
-    container.innerHTML = achievements.map(a => `
+    const container = document.getElementById('achievements-list');
+    
+    // Buscar Badges reais do Supabase
+    const { data: badges, error } = await supabaseClient
+        .from('badges')
+        .select('*')
+        .eq('usuario_id', user.id);
+
+    if (error || !badges || badges.length === 0) {
+        container.innerHTML = '<p class="text-muted-foreground" style="font-size: 0.875rem;">Nenhuma conquista ainda. Continue sua jornada!</p>';
+        return;
+    }
+
+    container.innerHTML = badges.map(b => `
         <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-            <div style="font-size: 1.5rem; background: var(--muted); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${a.icon}</div>
+            <div style="font-size: 1.5rem; background: var(--muted); width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${b.icone || '🏆'}</div>
             <div>
-                <p style="font-weight: 600; font-size: 0.875rem;">${a.title}</p>
-                <p style="font-size: 0.75rem; color: var(--muted-foreground);">${a.desc}</p>
+                <p style="font-weight: 600; font-size: 0.875rem;">${b.nome}</p>
+                <p style="font-size: 0.75rem; color: var(--muted-foreground);">${b.descricao}</p>
             </div>
         </div>
     `).join('');
