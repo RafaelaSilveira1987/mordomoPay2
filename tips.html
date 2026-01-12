@@ -94,54 +94,96 @@
 
     <script src="js/auth.js"></script>
     <script>
-        const defaultTips = [
+        const allTips = [
             { title: "O Princípio da Primazia", desc: "Honrar a Deus com as primícias não é sobre o valor, mas sobre o lugar que Ele ocupa em seu coração.", img: "images/financial-wisdom.png" },
             { title: "Planejamento e Diligência", desc: "Os planos do diligente levam à fartura. Estabelecer metas é uma forma de exercer mordomia.", img: "images/goals-achievement.png" },
-            { title: "Generosidade Transforma", desc: "A generosidade quebra o poder do materialismo. Quem dá com alegria experimenta a liberdade.", img: "images/giving-and-stewardship.png" }
+            { title: "Generosidade Transforma", desc: "A generosidade quebra o poder do materialismo. Quem dá com alegria experimenta a liberdade.", img: "images/giving-and-stewardship.png" },
+            { title: "Fuja das Dívidas", desc: "O que toma emprestado é servo do que empresta. Busque a liberdade financeira para servir melhor.", img: "images/financial-wisdom.png" },
+            { title: "Contentamento", desc: "A piedade com contentamento é grande lucro. Aprecie o que você tem enquanto busca seus objetivos.", img: "images/hero-financial-growth.png" },
+            { title: "Legado Familiar", desc: "O homem bom deixa herança aos filhos de seus filhos. Pense no impacto de longo prazo de suas escolhas.", img: "images/goals-achievement.png" }
         ];
 
         document.addEventListener('DOMContentLoaded', async () => {
-            loadTips();
-            loadDailyVerse();
+            await handleDailyUpdate();
         });
 
-        function loadTips() {
+        async function handleDailyUpdate() {
+            const today = new Date().toLocaleDateString();
+            const lastUpdate = localStorage.getItem('mordomopay_last_update');
+
+            if (lastUpdate !== today) {
+                // É um novo dia, atualizar tudo
+                await updateDailyVerse();
+                updateDailyTips();
+                localStorage.setItem('mordomopay_last_update', today);
+            } else {
+                // Carregar do cache do localStorage
+                displayCachedContent();
+            }
+        }
+
+        async function updateDailyVerse() {
+            const verseTextEl = document.getElementById('verse-text');
+            const verseRefEl = document.getElementById('verse-ref');
+
+            try {
+                const response = await fetch('https://bible-api.com/random?translation=almeida');
+                if (response.ok) {
+                    const data = await response.json();
+                    const verse = {
+                        text: `"${data.text.trim()}"`,
+                        ref: data.reference
+                    };
+                    localStorage.setItem('mordomopay_daily_verse', JSON.stringify(verse));
+                    renderVerse(verse);
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                const fallbacks = [
+                    { text: "\"Pois onde estiver o seu tesouro, ali também estará o seu coração.\"", ref: "Mateus 6:21" },
+                    { text: "\"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça.\"", ref: "Provérbios 10:14" },
+                    { text: "\"Honra ao Senhor com os teus bens e com as primícias de toda a tua renda.\"", ref: "Provérbios 3:9" }
+                ];
+                const randomVerse = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+                localStorage.setItem('mordomopay_daily_verse', JSON.stringify(randomVerse));
+                renderVerse(randomVerse);
+            }
+        }
+
+        function updateDailyTips() {
+            // Selecionar 3 dicas aleatórias para o dia
+            const shuffled = [...allTips].sort(() => 0.5 - Math.random());
+            const selectedTips = shuffled.slice(0, 3);
+            localStorage.setItem('mordomopay_daily_tips', JSON.stringify(selectedTips));
+            renderTips(selectedTips);
+        }
+
+        function displayCachedContent() {
+            const cachedVerse = JSON.parse(localStorage.getItem('mordomopay_daily_verse'));
+            const cachedTips = JSON.parse(localStorage.getItem('mordomopay_daily_tips'));
+
+            if (cachedVerse) renderVerse(cachedVerse);
+            else updateDailyVerse();
+
+            if (cachedTips) renderTips(cachedTips);
+            else updateDailyTips();
+        }
+
+        function renderVerse(verse) {
+            document.getElementById('verse-text').textContent = verse.text;
+            document.getElementById('verse-ref').textContent = verse.ref;
+        }
+
+        function renderTips(tips) {
             const container = document.getElementById('tips-container');
-            container.innerHTML = defaultTips.map(tip => `
+            container.innerHTML = tips.map(tip => `
                 <div class="card">
                     <img src="${tip.img}" alt="${tip.title}" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
                     <h3 class="serif mb-2">${tip.title}</h3>
                     <p style="font-size: 0.875rem; color: var(--muted-foreground);">${tip.desc}</p>
                 </div>
             `).join('');
-        }
-
-        async function loadDailyVerse() {
-            const verseText = document.getElementById('verse-text');
-            const verseRef = document.getElementById('verse-ref');
-
-            try {
-                // Usando a API gratuita 'A Bíblia Digital' ou similar
-                // Para garantir funcionamento offline/sem API, temos um fallback
-                const response = await fetch('https://bible-api.com/random?translation=almeida');
-                if (response.ok) {
-                    const data = await response.json();
-                    verseText.textContent = `"${data.text.trim()}"`;
-                    verseRef.textContent = data.reference;
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                // Fallback: Versículos de Sabedoria Financeira
-                const fallbacks = [
-                    { t: "Pois onde estiver o seu tesouro, ali também estará o seu coração.", r: "Mateus 6:21" },
-                    { t: "O que o sábio acumula com a mão é melhor que o que o tolo desperdiça.", r: "Provérbios 10:14" },
-                    { t: "Honra ao Senhor com os teus bens e com as primícias de toda a tua renda.", r: "Provérbios 3:9" }
-                ];
-                const today = new Date().getDate() % fallbacks.length;
-                verseText.textContent = `"${fallbacks[today].t}"`;
-                verseRef.textContent = fallbacks[today].r;
-            }
         }
     </script>
 </body>
