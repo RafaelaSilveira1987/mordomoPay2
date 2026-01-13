@@ -8,7 +8,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .fav-btn {
+            cursor: pointer;
+            transition: transform 0.2s;
+            color: var(--muted-foreground);
+        }
+        .fav-btn.active {
+            color: #ef4444;
+        }
+        .fav-btn:hover {
+            transform: scale(1.2);
+        }
+        .favorite-section {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -16,7 +35,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">
-                    <img src="images/logo.png" alt="Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                    <div class="logo-box">M</div>
                     <div class="logo-text">
                         <h1>MordomoPay</h1>
                         <p>Gestão Cristã</p>
@@ -78,14 +97,25 @@
                     <!-- Dicas serão carregadas aqui -->
                 </div>
 
-                <div class="card mt-8" style="background: var(--primary); color: white;">
+                <div class="card mt-8" style="background: var(--primary); color: white; position: relative;">
                     <div style="display: flex; gap: 2rem; align-items: center;">
                         <div style="font-size: 3rem;">📖</div>
-                        <div id="daily-verse-container">
-                            <h3 class="serif mb-2">Versículo do Dia</h3>
+                        <div id="daily-verse-container" style="flex: 1;">
+                            <div class="flex-between">
+                                <h3 class="serif mb-2">Versículo do Dia</h3>
+                                <i class="fas fa-heart fav-btn" id="fav-verse-btn" onclick="toggleFavoriteVerse()"></i>
+                            </div>
                             <p id="verse-text" style="font-style: italic; opacity: 0.9;">Carregando sabedoria...</p>
                             <p id="verse-ref" style="font-size: 0.75rem; margin-top: 0.5rem; font-weight: bold;"></p>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Seção de Favoritos -->
+                <div class="favorite-section" id="favorites-section" style="display: none;">
+                    <h2 class="serif mb-4">Meus Favoritos</h2>
+                    <div class="grid-3" id="favorites-container">
+                        <!-- Favoritos serão carregados aqui -->
                     </div>
                 </div>
             </div>
@@ -95,55 +125,50 @@
     <script src="js/auth.js"></script>
     <script>
         const allTips = [
-            { title: "O Princípio da Primazia", desc: "Honrar a Deus com as primícias não é sobre o valor, mas sobre o lugar que Ele ocupa em seu coração.", img: "images/financial-wisdom.png" },
-            { title: "Planejamento e Diligência", desc: "Os planos do diligente levam à fartura. Estabelecer metas é uma forma de exercer mordomia.", img: "images/goals-achievement.png" },
-            { title: "Generosidade Transforma", desc: "A generosidade quebra o poder do materialismo. Quem dá com alegria experimenta a liberdade.", img: "images/giving-and-stewardship.png" },
-            { title: "Fuja das Dívidas", desc: "O que toma emprestado é servo do que empresta. Busque a liberdade financeira para servir melhor.", img: "images/financial-wisdom.png" },
-            { title: "Contentamento", desc: "A piedade com contentamento é grande lucro. Aprecie o que você tem enquanto busca seus objetivos.", img: "images/hero-financial-growth.png" },
-            { title: "Legado Familiar", desc: "O homem bom deixa herança aos filhos de seus filhos. Pense no impacto de longo prazo de suas escolhas.", img: "images/goals-achievement.png" }
+            { id: 1, title: "O Princípio da Primazia", desc: "Honrar a Deus com as primícias não é sobre o valor, mas sobre o lugar que Ele ocupa em seu coração.", img: "images/financial-wisdom.png" },
+            { id: 2, title: "Planejamento e Diligência", desc: "Os planos do diligente levam à fartura. Estabelecer metas é uma forma de exercer mordomia.", img: "images/goals-achievement.png" },
+            { id: 3, title: "Generosidade Transforma", desc: "A generosidade quebra o poder do materialismo. Quem dá com alegria experimenta a liberdade.", img: "images/giving-and-stewardship.png" },
+            { id: 4, title: "Fuja das Dívidas", desc: "O que toma emprestado é servo do que empresta. Busque a liberdade financeira para servir melhor.", img: "images/financial-wisdom.png" },
+            { id: 5, title: "Contentamento", desc: "A piedade com contentamento é grande lucro. Aprecie o que você tem enquanto busca seus objetivos.", img: "images/hero-financial-growth.png" },
+            { id: 6, title: "Legado Familiar", desc: "O homem bom deixa herança aos filhos de seus filhos. Pense no impacto de longo prazo de suas escolhas.", img: "images/goals-achievement.png" }
         ];
 
         document.addEventListener('DOMContentLoaded', async () => {
             await handleDailyUpdate();
+            renderFavorites();
         });
 
         async function handleDailyUpdate() {
-            const today = new Date().toLocaleDateString();
+            const now = new Date();
+            const today = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
             const lastUpdate = localStorage.getItem('mordomopay_last_update');
 
-            if (lastUpdate !== today) {
-                // É um novo dia, atualizar tudo
+            // Se for um novo dia ou se não houver cache, atualiza
+            if (lastUpdate !== today || !localStorage.getItem('mordomopay_daily_verse')) {
+                console.log('Novo dia detectado. Atualizando conteúdo diário...');
                 await updateDailyVerse();
                 updateDailyTips();
                 localStorage.setItem('mordomopay_last_update', today);
             } else {
-                // Carregar do cache do localStorage
+                console.log('Conteúdo do dia já carregado.');
                 displayCachedContent();
             }
+            updateVerseFavIcon();
         }
 
         async function updateDailyVerse() {
-            const verseTextEl = document.getElementById('verse-text');
-            const verseRefEl = document.getElementById('verse-ref');
-
             try {
                 const response = await fetch('https://bible-api.com/random?translation=almeida');
                 if (response.ok) {
                     const data = await response.json();
-                    const verse = {
-                        text: `"${data.text.trim()}"`,
-                        ref: data.reference
-                    };
+                    const verse = { text: `"${data.text.trim()}"`, ref: data.reference };
                     localStorage.setItem('mordomopay_daily_verse', JSON.stringify(verse));
                     renderVerse(verse);
-                } else {
-                    throw new Error();
-                }
+                } else throw new Error();
             } catch (e) {
                 const fallbacks = [
                     { text: "\"Pois onde estiver o seu tesouro, ali também estará o seu coração.\"", ref: "Mateus 6:21" },
-                    { text: "\"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça.\"", ref: "Provérbios 10:14" },
-                    { text: "\"Honra ao Senhor com os teus bens e com as primícias de toda a tua renda.\"", ref: "Provérbios 3:9" }
+                    { text: "\"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça.\"", ref: "Provérbios 10:14" }
                 ];
                 const randomVerse = fallbacks[Math.floor(Math.random() * fallbacks.length)];
                 localStorage.setItem('mordomopay_daily_verse', JSON.stringify(randomVerse));
@@ -152,7 +177,6 @@
         }
 
         function updateDailyTips() {
-            // Selecionar 3 dicas aleatórias para o dia
             const shuffled = [...allTips].sort(() => 0.5 - Math.random());
             const selectedTips = shuffled.slice(0, 3);
             localStorage.setItem('mordomopay_daily_tips', JSON.stringify(selectedTips));
@@ -162,12 +186,8 @@
         function displayCachedContent() {
             const cachedVerse = JSON.parse(localStorage.getItem('mordomopay_daily_verse'));
             const cachedTips = JSON.parse(localStorage.getItem('mordomopay_daily_tips'));
-
             if (cachedVerse) renderVerse(cachedVerse);
-            else updateDailyVerse();
-
             if (cachedTips) renderTips(cachedTips);
-            else updateDailyTips();
         }
 
         function renderVerse(verse) {
@@ -177,13 +197,94 @@
 
         function renderTips(tips) {
             const container = document.getElementById('tips-container');
-            container.innerHTML = tips.map(tip => `
-                <div class="card">
-                    <img src="${tip.img}" alt="${tip.title}" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
-                    <h3 class="serif mb-2">${tip.title}</h3>
-                    <p style="font-size: 0.875rem; color: var(--muted-foreground);">${tip.desc}</p>
-                </div>
-            `).join('');
+            const favorites = JSON.parse(localStorage.getItem('mordomopay_fav_tips') || '[]');
+            
+            container.innerHTML = tips.map(tip => {
+                const isFav = favorites.some(f => f.id === tip.id);
+                return `
+                    <div class="card">
+                        <img src="${tip.img}" alt="${tip.title}" style="width: 100%; border-radius: 8px; margin-bottom: 1rem;">
+                        <div class="flex-between mb-2">
+                            <h3 class="serif">${tip.title}</h3>
+                            <i class="fas fa-heart fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavoriteTip(${tip.id})"></i>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--muted-foreground);">${tip.desc}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Lógica de Favoritos
+        function toggleFavoriteVerse() {
+            const verse = JSON.parse(localStorage.getItem('mordomopay_daily_verse'));
+            let favorites = JSON.parse(localStorage.getItem('mordomopay_fav_verses') || '[]');
+            
+            const index = favorites.findIndex(f => f.ref === verse.ref);
+            if (index > -1) favorites.splice(index, 1);
+            else favorites.push(verse);
+
+            localStorage.setItem('mordomopay_fav_verses', JSON.stringify(favorites));
+            updateVerseFavIcon();
+            renderFavorites();
+        }
+
+        function updateVerseFavIcon() {
+            const verse = JSON.parse(localStorage.getItem('mordomopay_daily_verse'));
+            const favorites = JSON.parse(localStorage.getItem('mordomopay_fav_verses') || '[]');
+            const btn = document.getElementById('fav-verse-btn');
+            if (verse && favorites.some(f => f.ref === verse.ref)) btn.classList.add('active');
+            else btn.classList.remove('active');
+        }
+
+        function toggleFavoriteTip(id) {
+            const tip = allTips.find(t => t.id === id);
+            let favorites = JSON.parse(localStorage.getItem('mordomopay_fav_tips') || '[]');
+            
+            const index = favorites.findIndex(f => f.id === id);
+            if (index > -1) favorites.splice(index, 1);
+            else favorites.push(tip);
+
+            localStorage.setItem('mordomopay_fav_tips', JSON.stringify(favorites));
+            
+            // Re-renderizar dicas atuais e favoritos
+            const currentTips = JSON.parse(localStorage.getItem('mordomopay_daily_tips'));
+            renderTips(currentTips);
+            renderFavorites();
+        }
+
+        function renderFavorites() {
+            const favVerses = JSON.parse(localStorage.getItem('mordomopay_fav_verses') || '[]');
+            const favTips = JSON.parse(localStorage.getItem('mordomopay_fav_tips') || '[]');
+            const section = document.getElementById('favorites-section');
+            const container = document.getElementById('favorites-container');
+
+            if (favVerses.length === 0 && favTips.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            let html = '';
+
+            favVerses.forEach(v => {
+                html += `
+                    <div class="card" style="background: var(--muted); border-left: 4px solid var(--primary);">
+                        <p style="font-style: italic; font-size: 0.875rem;">${v.text}</p>
+                        <p style="font-weight: bold; font-size: 0.75rem; margin-top: 0.5rem;">${v.ref}</p>
+                    </div>
+                `;
+            });
+
+            favTips.forEach(t => {
+                html += `
+                    <div class="card">
+                        <h3 class="serif mb-2" style="font-size: 1rem;">${t.title}</h3>
+                        <p style="font-size: 0.75rem; color: var(--muted-foreground);">${t.desc}</p>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
     </script>
 </body>
