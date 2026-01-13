@@ -21,6 +21,7 @@
                         <h1>MordomoPay</h1>
                         <p>Gestão Cristã</p>
                     </div>
+                    <button id="close-menu" class="btn btn-ghost md-hidden" style="margin-left: auto;">✕</button>
                 </div>
             </div>
             <nav class="nav-menu">
@@ -62,7 +63,12 @@
                 <div class="header-right">
                     <div class="user-info">
                         <p class="user-name" id="user-display-name">Usuário</p>
-                        <p class="user-status" id="user-status-display">Aprendiz de Mordomo</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <p class="user-status" id="user-status-display">Aprendiz de Mordomo</p>
+                            <div class="progress-container" style="width: 100px; height: 6px; margin: 0;">
+                                <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="user-avatar">U</div>
                 </div>

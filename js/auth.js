@@ -61,10 +61,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Toggle Sidebar Mobile
     const menuToggle = document.getElementById('menu-toggle');
+    const closeMenu = document.getElementById('close-menu');
     const sidebar = document.getElementById('sidebar');
+    
     if (menuToggle && sidebar) {
         menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
+            sidebar.classList.add('open');
+        });
+    }
+
+    if (closeMenu && sidebar) {
+        closeMenu.addEventListener('click', () => {
+            sidebar.classList.remove('open');
         });
     }
 

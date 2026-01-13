@@ -107,12 +107,13 @@ async function checkAndAwardBadges() {
     const { data: transactions } = await supabaseClient.from('transacoes').select('tipo').eq('usuario_id', user.id);
     const { data: tithes } = await supabaseClient.from('dizimos_ofertas').select('id').eq('usuario_id', user.id);
     const { data: goals } = await supabaseClient.from('metas_financeiras').select('valor_atual, valor_alvo').eq('usuario_id', user.id);
-    const { data: existingBadges } = await supabaseClient.from('badges').select('nome').eq('usuario_id', user.id);
+    const { data: existingBadges } = await supabaseClient.from('badges').select('id, nome').eq('usuario_id', user.id);
 
     const badgeNames = (existingBadges || []).map(b => b.nome);
+    const badgesToRemove = [];
     const newBadges = [];
 
-    // Lógica de Conquistas
+    // Lógica de Conquistas (Adição)
     if (transactions?.length > 0 && !badgeNames.includes('Primeiro Passo')) {
         newBadges.push({ nome: 'Primeiro Passo', descricao: 'Registrou sua primeira movimentação.', icone: '🌱', usuario_id: user.id });
     }
@@ -126,17 +127,42 @@ async function checkAndAwardBadges() {
         newBadges.push({ nome: 'Semeador', descricao: 'Registrou 5 fontes de entrada diferentes.', icone: '🌾', usuario_id: user.id });
     }
 
-    if (newBadges.length > 0) {
-        await supabaseClient.from('badges').insert(newBadges);
+    // Lógica de Rebaixamento (Remoção)
+    if (transactions?.length === 0 && badgeNames.includes('Primeiro Passo')) {
+        const b = existingBadges.find(x => x.nome === 'Primeiro Passo');
+        if (b) badgesToRemove.push(b.id);
+    }
+    if (tithes?.length === 0 && badgeNames.includes('Primícias')) {
+        const b = existingBadges.find(x => x.nome === 'Primícias');
+        if (b) badgesToRemove.push(b.id);
+    }
+    if (!goals?.some(g => parseFloat(g.valor_atual) >= parseFloat(g.valor_alvo)) && badgeNames.includes('Diligente')) {
+        const b = existingBadges.find(x => x.nome === 'Diligente');
+        if (b) badgesToRemove.push(b.id);
+    }
+    if (transactions?.filter(t => t.tipo === 'entrada').length < 5 && badgeNames.includes('Semeador')) {
+        const b = existingBadges.find(x => x.nome === 'Semeador');
+        if (b) badgesToRemove.push(b.id);
     }
 
-    // Calcular Nível (Baseado no número de badges)
-    const totalBadges = (existingBadges?.length || 0) + newBadges.length;
-    const levelIndex = Math.min(Math.floor(totalBadges / 2), MORDOMIA_LEVELS.length - 1);
+    // Executar alterações no banco
+    if (newBadges.length > 0) await supabaseClient.from('badges').insert(newBadges);
+    if (badgesToRemove.length > 0) await supabaseClient.from('badges').delete().in('id', badgesToRemove);
+
+    // Recalcular Nível
+    const finalBadgeCount = (existingBadges?.length || 0) + newBadges.length - badgesToRemove.length;
+    const levelIndex = Math.min(Math.floor(finalBadgeCount / 2), MORDOMIA_LEVELS.length - 1);
     const currentLevel = MORDOMIA_LEVELS[levelIndex];
 
+    // Barra de Progresso de Nível
+    const badgesForNextLevel = 2;
+    const progressInLevel = (finalBadgeCount % badgesForNextLevel) / badgesForNextLevel * 100;
+
     const levelDisplay = document.getElementById('user-status-display');
+    const progressBar = document.getElementById('level-progress-bar');
+    
     if (levelDisplay) levelDisplay.textContent = currentLevel;
+    if (progressBar) progressBar.style.width = `${progressInLevel}%`;
 }
 
 async function renderAchievements() {
