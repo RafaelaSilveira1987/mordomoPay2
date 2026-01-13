@@ -1,8 +1,22 @@
 document.addEventListener('DOMContentLoaded', async () => {
     await updateDashboardStats();
     await renderMiniGoals();
+    await checkAndAwardBadges();
     await renderAchievements();
 });
+
+const MORDOMIA_LEVELS = [
+    "Aprendiz de Mordomo",
+    "Buscador de Sabedoria",
+    "Praticante da Diligência",
+    "Gestor Prudente",
+    "Sentinela das Finanças",
+    "Administrador Fiel",
+    "Semeador Generoso",
+    "Mestre da Provisão",
+    "Exemplo de Mordomia",
+    "Mordomo Fiel e Prudente"
+];
 
 async function updateDashboardStats() {
     const user = await Auth.getUser();
@@ -85,17 +99,56 @@ async function renderMiniGoals() {
     }).join('');
 }
 
+async function checkAndAwardBadges() {
+    const user = await Auth.getUser();
+    if (!user) return;
+
+    // Buscar dados necessários
+    const { data: transactions } = await supabaseClient.from('transacoes').select('tipo').eq('usuario_id', user.id);
+    const { data: tithes } = await supabaseClient.from('dizimos_ofertas').select('id').eq('usuario_id', user.id);
+    const { data: goals } = await supabaseClient.from('metas_financeiras').select('valor_atual, valor_alvo').eq('usuario_id', user.id);
+    const { data: existingBadges } = await supabaseClient.from('badges').select('nome').eq('usuario_id', user.id);
+
+    const badgeNames = (existingBadges || []).map(b => b.nome);
+    const newBadges = [];
+
+    // Lógica de Conquistas
+    if (transactions?.length > 0 && !badgeNames.includes('Primeiro Passo')) {
+        newBadges.push({ nome: 'Primeiro Passo', descricao: 'Registrou sua primeira movimentação.', icone: '🌱', usuario_id: user.id });
+    }
+    if (tithes?.length > 0 && !badgeNames.includes('Primícias')) {
+        newBadges.push({ nome: 'Primícias', descricao: 'Honrou a Deus com sua primeira contribuição.', icone: '🙏', usuario_id: user.id });
+    }
+    if (goals?.some(g => parseFloat(g.valor_atual) >= parseFloat(g.valor_alvo)) && !badgeNames.includes('Diligente')) {
+        newBadges.push({ nome: 'Diligente', descricao: 'Alcançou sua primeira meta financeira.', icone: '🎯', usuario_id: user.id });
+    }
+    if (transactions?.filter(t => t.tipo === 'entrada').length >= 5 && !badgeNames.includes('Semeador')) {
+        newBadges.push({ nome: 'Semeador', descricao: 'Registrou 5 fontes de entrada diferentes.', icone: '🌾', usuario_id: user.id });
+    }
+
+    if (newBadges.length > 0) {
+        await supabaseClient.from('badges').insert(newBadges);
+    }
+
+    // Calcular Nível (Baseado no número de badges)
+    const totalBadges = (existingBadges?.length || 0) + newBadges.length;
+    const levelIndex = Math.min(Math.floor(totalBadges / 2), MORDOMIA_LEVELS.length - 1);
+    const currentLevel = MORDOMIA_LEVELS[levelIndex];
+
+    const levelDisplay = document.getElementById('user-status-display');
+    if (levelDisplay) levelDisplay.textContent = currentLevel;
+}
+
 async function renderAchievements() {
     const user = await Auth.getUser();
     if (!user) return;
 
     const container = document.getElementById('achievements-list');
-    
-    // Buscar Badges reais do Supabase
     const { data: badges, error } = await supabaseClient
         .from('badges')
         .select('*')
-        .eq('usuario_id', user.id);
+        .eq('usuario_id', user.id)
+        .order('data_conquista', { ascending: false });
 
     if (error || !badges || badges.length === 0) {
         container.innerHTML = '<p class="text-muted-foreground" style="font-size: 0.875rem;">Nenhuma conquista ainda. Continue sua jornada!</p>';
