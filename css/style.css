@@ -1,6 +1,6 @@
 :root {
     /* Minimalismo Cristão Moderno - Paleta de Cores */
-    --primary: #2A4B8D; /* Azul Profundo (aproximado de oklch) */
+    --primary: #2A4B8D; /* Azul Profundo */
     --primary-foreground: #ffffff;
     --sidebar-primary: #2A4B8D;
     --sidebar-primary-foreground: #ffffff;
@@ -74,7 +74,7 @@ h1, h2, h3, h4, .serif {
     flex-direction: column;
     position: fixed;
     height: 100vh;
-    z-index: 40;
+    z-index: 100;
     transition: transform 0.3s ease;
 }
 
@@ -485,10 +485,12 @@ input:focus, select:focus {
 .flex-between { display: flex; justify-content: space-between; align-items: center; }
 .gap-2 { gap: 0.5rem; }
 
-/* Responsive */
+/* Responsive & Badge States */
 @media (max-width: 768px) {
     .sidebar {
         transform: translateX(-100%);
+        position: fixed;
+        z-index: 100;
     }
     .sidebar.open {
         transform: translateX(0);
@@ -496,4 +498,39 @@ input:focus, select:focus {
     .main-content {
         margin-left: 0;
     }
+    .md-hidden {
+        display: block !important;
+    }
+    .md-visible {
+        display: none !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .md-hidden {
+        display: none !important;
+    }
+}
+
+.badge-card {
+    transition: all 0.3s ease;
+    text-align: center;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.badge-card.locked {
+    filter: grayscale(1);
+    opacity: 0.4;
+}
+.badge-card.in-progress {
+    border: 2px dashed var(--primary);
+    background-color: rgba(42, 75, 141, 0.05);
+}
+.badge-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
 }
