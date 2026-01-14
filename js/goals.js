@@ -26,6 +26,7 @@ async function fetchGoals() {
 
 function renderGoals() {
     const goalsList = document.getElementById('goals-list');
+    if (!goalsList) return;
     goalsList.innerHTML = '';
 
     let completed = 0;
@@ -58,8 +59,8 @@ function renderGoals() {
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="editGoal(${goal.id})">✏️</button>
-                    <button class="btn btn-ghost" onclick="deleteGoal(${goal.id})">🗑️</button>
+                    <button class="btn btn-ghost" onclick="editGoal('${goal.id}')">✏️</button>
+                    <button class="btn btn-ghost" onclick="deleteGoal('${goal.id}')">🗑️</button>
                 </div>
             </div>
             <div class="progress-section">
@@ -75,15 +76,19 @@ function renderGoals() {
         goalsList.appendChild(card);
     });
 
-    document.getElementById('active-goals').textContent = goals.length;
-    document.getElementById('completed-goals').textContent = completed;
-    document.getElementById('overall-progress').textContent = goals.length > 0 ? `${(totalProgress / goals.length).toFixed(0)}%` : '0%';
+    if (document.getElementById('active-goals')) document.getElementById('active-goals').textContent = goals.length;
+    if (document.getElementById('completed-goals')) document.getElementById('completed-goals').textContent = completed;
+    if (document.getElementById('overall-progress')) document.getElementById('overall-progress').textContent = goals.length > 0 ? `${(totalProgress / goals.length).toFixed(0)}%` : '0%';
 }
 
 function setupEventListeners() {
-    document.getElementById('btn-new-goal').addEventListener('click', () => openModal());
-    document.getElementById('btn-cancel-goal').addEventListener('click', closeModal);
-    document.getElementById('form-goal').addEventListener('submit', async (e) => {
+    const btnNew = document.getElementById('btn-new-goal');
+    const btnCancel = document.getElementById('btn-cancel-goal');
+    const form = document.getElementById('form-goal');
+
+    if (btnNew) btnNew.addEventListener('click', () => openModal());
+    if (btnCancel) btnCancel.addEventListener('click', closeModal);
+    if (form) form.addEventListener('submit', async (e) => {
         e.preventDefault();
         await saveGoal();
     });
@@ -91,6 +96,8 @@ function setupEventListeners() {
 
 function openModal(goal = null) {
     const modal = document.getElementById('modal-goal');
+    if (!modal) return;
+
     if (goal) {
         document.getElementById('goal-modal-title').textContent = 'Editar Meta';
         document.getElementById('goal-id').value = goal.id;
@@ -109,12 +116,17 @@ function openModal(goal = null) {
 }
 
 function closeModal() {
-    document.getElementById('modal-goal').style.display = 'none';
+    const modal = document.getElementById('modal-goal');
+    if (modal) modal.style.display = 'none';
 }
 
 async function saveGoal() {
     const user = await Auth.getUser();
-    if (!user) return;
+    if (!user) {
+        alert('Sessão expirada. Por favor, faça login novamente.');
+        window.location.href = 'login.html';
+        return;
+    }
 
     const id = document.getElementById('goal-id').value;
     const payload = {
@@ -134,22 +146,28 @@ async function saveGoal() {
         result = await supabaseClient.from('metas_financeiras').insert([payload]);
     }
 
-    if (result.error) alert('Erro: ' + result.error.message);
-    else {
+    if (result.error) {
+        console.error('Erro Supabase:', result.error);
+        alert('Erro: ' + result.error.message);
+    } else {
         await fetchGoals();
         closeModal();
     }
 }
 
-function editGoal(id) {
+window.editGoal = function(id) {
     const g = goals.find(g => g.id === id);
     if (g) openModal(g);
 }
 
-async function deleteGoal(id) {
+window.deleteGoal = async function(id) {
     if (confirm('Excluir meta?')) {
         const { error } = await supabaseClient.from('metas_financeiras').delete().eq('id', id);
-        if (error) alert('Erro: ' + error.message);
-        else await fetchGoals();
+        if (error) {
+            console.error('Erro ao excluir:', error);
+            alert('Erro: ' + error.message);
+        } else {
+            await fetchGoals();
+        }
     }
 }

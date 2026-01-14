@@ -14,7 +14,6 @@ async function fetchCategories() {
     const user = await Auth.getUser();
     if (!user) return;
 
-    // Buscar categorias globais ou do usuário
     const { data, error } = await supabaseClient
         .from('categoria_trasacoes')
         .select('*');
@@ -166,7 +165,11 @@ function closeModal() {
 
 async function saveTransaction() {
     const user = await Auth.getUser();
-    if (!user) return;
+    if (!user) {
+        alert('Sessão expirada. Por favor, faça login novamente.');
+        window.location.href = 'login.html';
+        return;
+    }
 
     const id = document.getElementById('transaction-id').value;
     const tipo = document.getElementById('transaction-type').value;
@@ -181,7 +184,7 @@ async function saveTransaction() {
         data: data_str,
         mes: mes,
         usuario_id: user.id,
-        recebedor: payee // Unificado para usar apenas a coluna 'recebedor' que existe no banco
+        recebedor: payee
     };
 
     let result;
@@ -192,6 +195,7 @@ async function saveTransaction() {
     }
 
     if (result.error) {
+        console.error('Erro Supabase:', result.error);
         alert('Erro ao salvar: ' + result.error.message);
     } else {
         await fetchTransactions();
@@ -208,8 +212,10 @@ window.editTransaction = function(id) {
 window.deleteTransaction = async function(id) {
     if (confirm('Excluir esta transação?')) {
         const { error } = await supabaseClient.from('transacoes').delete().eq('id', id);
-        if (error) alert('Erro: ' + error.message);
-        else {
+        if (error) {
+            console.error('Erro ao excluir:', error);
+            alert('Erro: ' + error.message);
+        } else {
             await fetchTransactions();
             if (window.updateUserLevelDisplay) window.updateUserLevelDisplay();
         }

@@ -56,8 +56,8 @@ function renderTithes() {
                 </div>
             </div>
             <div style="margin-top: 0.5rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
-                <button class="btn btn-ghost" style="padding: 0.25rem;" onclick="editTithe(${t.id})">✏️</button>
-                <button class="btn btn-ghost" style="padding: 0.25rem;" onclick="deleteTithe(${t.id})">🗑️</button>
+                <button class="btn btn-ghost" style="padding: 0.25rem;" onclick="editTithe('${t.id}')">✏️</button>
+                <button class="btn btn-ghost" style="padding: 0.25rem;" onclick="deleteTithe('${t.id}')">🗑️</button>
             </div>
         `;
         historyList.appendChild(card);
@@ -130,7 +130,11 @@ function closeModal() {
 
 async function saveTithe() {
     const user = await Auth.getUser();
-    if (!user) return;
+    if (!user) {
+        alert('Sessão expirada. Por favor, faça login novamente.');
+        window.location.href = 'login.html';
+        return;
+    }
 
     const id = document.getElementById('tithe-id').value;
     const payload = {
@@ -148,22 +152,28 @@ async function saveTithe() {
         result = await supabaseClient.from('dizimos_ofertas').insert([payload]);
     }
 
-    if (result.error) alert('Erro: ' + result.error.message);
-    else {
+    if (result.error) {
+        console.error('Erro Supabase:', result.error);
+        alert('Erro: ' + result.error.message);
+    } else {
         await fetchTithes();
         closeModal();
     }
 }
 
-function editTithe(id) {
+window.editTithe = function(id) {
     const t = tithes.find(t => t.id === id);
     if (t) openModal(t);
 }
 
-async function deleteTithe(id) {
+window.deleteTithe = async function(id) {
     if (confirm('Excluir registro?')) {
         const { error } = await supabaseClient.from('dizimos_ofertas').delete().eq('id', id);
-        if (error) alert('Erro: ' + error.message);
-        else await fetchTithes();
+        if (error) {
+            console.error('Erro ao excluir:', error);
+            alert('Erro: ' + error.message);
+        } else {
+            await fetchTithes();
+        }
     }
 }
