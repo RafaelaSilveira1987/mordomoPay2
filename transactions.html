@@ -43,7 +43,7 @@
             <header>
                 <div class="header-left">
                     <button id="menu-toggle" class="btn btn-ghost md-hidden" style="font-size: 1.5rem;">☰</button>
-                    <h2 class="md-visible">Transações</h2>
+                    <h2 class="md-visible">Minhas Transações</h2>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
@@ -68,18 +68,37 @@
                     <button class="btn btn-primary" id="btn-new-transaction">+ Nova Transação</button>
                 </div>
 
-                <div class="grid-3">
+                <div class="grid-3 mb-8">
                     <div class="card">
                         <p class="user-status">Total Entradas</p>
-                        <h2 class="text-success" id="total-income">R$ 0,00</h2>
+                        <h2 class="text-green" id="total-income">R$ 0,00</h2>
                     </div>
                     <div class="card">
                         <p class="user-status">Total Saídas</p>
-                        <h2 class="text-destructive" id="total-expense">R$ 0,00</h2>
+                        <h2 class="text-red" id="total-expense">R$ 0,00</h2>
                     </div>
                     <div class="card">
                         <p class="user-status">Saldo Atual</p>
                         <h2 id="total-balance">R$ 0,00</h2>
+                    </div>
+                </div>
+
+                <div class="card mb-8">
+                    <div class="grid-3" style="grid-template-columns: 1fr 1fr auto; gap: 1rem; align-items: flex-end;">
+                        <div class="form-group mb-0">
+                            <label>Tipo</label>
+                            <select id="filter-type">
+                                <option value="all">Todos</option>
+                                <option value="entrada">Entradas</option>
+                                <option value="saida">Saídas</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label>Categoria</label>
+                            <select id="filter-category">
+                                <option value="all">Todas</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -88,18 +107,21 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Data</th>
                                     <th>Descrição</th>
                                     <th>Categoria</th>
-                                    <th>Data</th>
-                                    <th>Tipo</th>
                                     <th style="text-align: right;">Valor</th>
+                                    <th style="text-align: center;">Status</th>
                                     <th style="text-align: center;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="transactions-table-body">
-                                <!-- Dados via JS -->
+                                <!-- Preenchido via JS -->
                             </tbody>
                         </table>
+                        <div id="no-transactions" style="display: none; text-align: center; padding: 2rem; color: #71717a;">
+                            Nenhuma transação encontrada para os filtros selecionados.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -115,33 +137,27 @@
             </div>
             <form id="form-transaction">
                 <input type="hidden" id="transaction-id">
-                <div class="form-group">
-                    <label>Descrição</label>
-                    <input type="text" id="transaction-description" required>
-                </div>
                 <div class="grid-3" style="grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0;">
-                    <div class="form-group">
-                        <label>Valor</label>
-                        <input type="number" step="0.01" id="transaction-amount" required>
-                    </div>
                     <div class="form-group">
                         <label>Tipo</label>
                         <select id="transaction-type" required>
-                            <option value="entrada">Entrada</option>
-                            <option value="saida">Saída</option>
+                            <option value="saida">Saída (Despesa)</option>
+                            <option value="entrada">Entrada (Receita)</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor (R$)</label>
+                        <input type="number" step="0.01" id="transaction-amount" required>
                     </div>
                 </div>
                 <div class="form-group">
+                    <label>Descrição (Recebedor/Pagador)</label>
+                    <input type="text" id="transaction-payee" placeholder="Ex: Supermercado ou Salário" required>
+                </div>
+                <div class="form-group">
                     <label>Categoria</label>
-                    <select id="transaction-category" required>
-                        <option value="Alimentação">Alimentação</option>
-                        <option value="Moradia">Moradia</option>
-                        <option value="Transporte">Transporte</option>
-                        <option value="Lazer">Lazer</option>
-                        <option value="Saúde">Saúde</option>
-                        <option value="Educação">Educação</option>
-                        <option value="Outros">Outros</option>
+                    <select id="transaction-category">
+                        <!-- Preenchido via JS -->
                     </select>
                 </div>
                 <div class="form-group">

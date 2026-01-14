@@ -2,6 +2,9 @@ let transactions = [];
 let categories = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const user = await Auth.getUser();
+    if (!user) return;
+
     await fetchCategories();
     await fetchTransactions();
     setupEventListeners();
@@ -11,10 +14,10 @@ async function fetchCategories() {
     const user = await Auth.getUser();
     if (!user) return;
 
+    // Buscar categorias globais ou do usuário
     const { data, error } = await supabaseClient
         .from('categoria_trasacoes')
-        .select('*')
-        .eq('usuario_id', user.id);
+        .select('*');
 
     if (!error && data) {
         categories = data;
@@ -26,15 +29,21 @@ function renderCategoryOptions() {
     const filterSelect = document.getElementById('filter-category');
     const formSelect = document.getElementById('transaction-category');
     
-    filterSelect.innerHTML = '<option value="all">Todas as Categorias</option>';
-    formSelect.innerHTML = '';
+    if (filterSelect) {
+        filterSelect.innerHTML = '<option value="all">Todas as Categorias</option>';
+        categories.forEach(cat => {
+            const opt = new Option(cat.descricao, cat.id);
+            filterSelect.add(opt);
+        });
+    }
 
-    categories.forEach(cat => {
-        const opt1 = new Option(cat.descricao, cat.id);
-        const opt2 = new Option(cat.descricao, cat.id);
-        filterSelect.add(opt1);
-        formSelect.add(opt2);
-    });
+    if (formSelect) {
+        formSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+        categories.forEach(cat => {
+            const opt = new Option(cat.descricao, cat.id);
+            formSelect.add(opt);
+        });
+    }
 }
 
 async function fetchTransactions() {
@@ -58,12 +67,14 @@ async function fetchTransactions() {
 
 function renderTransactions() {
     const tableBody = document.getElementById('transactions-table-body');
+    if (!tableBody) return;
+
     const filterType = document.getElementById('filter-type').value;
     const filterCat = document.getElementById('filter-category').value;
     
     const filtered = transactions.filter(t => {
         const typeMatch = filterType === 'all' || t.tipo === filterType;
-        const catMatch = filterCat === 'all' || t.categoria_id.toString() === filterCat;
+        const catMatch = filterCat === 'all' || (t.categoria_id && t.categoria_id.toString() === filterCat);
         return typeMatch && catMatch;
     });
 
@@ -81,51 +92,62 @@ function renderTransactions() {
 
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${t.descricao}</td>
-            <td><span class="badge badge-secondary">${catDesc}</span></td>
-            <td>${t.recebedor || t.pagador || '-'}</td>
             <td>${new Date(t.data).toLocaleDateString('pt-BR')}</td>
+            <td>${t.recebedor || t.pagador || '-'}</td>
+            <td><span class="badge badge-secondary">${catDesc}</span></td>
             <td style="text-align: right; font-weight: bold;" class="${t.tipo === 'entrada' ? 'text-green' : 'text-red'}">
                 ${t.tipo === 'entrada' ? '+' : '-'} R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </td>
+            <td style="text-align: center;"><span class="badge badge-success">${t.tipo === 'entrada' ? 'Recebido' : 'Pago'}</span></td>
             <td style="text-align: center;">
-                <button class="btn btn-ghost" onclick="editTransaction(${t.id})">✏️</button>
-                <button class="btn btn-ghost" onclick="deleteTransaction(${t.id})">🗑️</button>
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button class="btn btn-ghost" onclick="editTransaction(${t.id})" title="Editar">✏️</button>
+                    <button class="btn btn-ghost" onclick="deleteTransaction(${t.id})" title="Excluir">🗑️</button>
+                </div>
             </td>
         `;
         tableBody.appendChild(row);
     });
 
-    document.getElementById('total-income').textContent = `R$ ${totalIn.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('total-expense').textContent = `R$ ${totalOut.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('total-balance').textContent = `R$ ${(totalIn - totalOut).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (document.getElementById('total-income')) document.getElementById('total-income').textContent = `R$ ${totalIn.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (document.getElementById('total-expense')) document.getElementById('total-expense').textContent = `R$ ${totalOut.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (document.getElementById('total-balance')) document.getElementById('total-balance').textContent = `R$ ${(totalIn - totalOut).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     
-    document.getElementById('no-transactions').style.display = filtered.length === 0 ? 'block' : 'none';
+    const noTransactionsEl = document.getElementById('no-transactions');
+    if (noTransactionsEl) noTransactionsEl.style.display = filtered.length === 0 ? 'block' : 'none';
 }
 
 function setupEventListeners() {
-    document.getElementById('filter-type').addEventListener('change', renderTransactions);
-    document.getElementById('filter-category').addEventListener('change', renderTransactions);
-    document.getElementById('btn-new-transaction').addEventListener('click', () => openModal());
-    document.getElementById('btn-cancel-transaction').addEventListener('click', closeModal);
-    document.getElementById('form-transaction').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await saveTransaction();
-    });
+    const filterType = document.getElementById('filter-type');
+    const filterCat = document.getElementById('filter-category');
+    const btnNew = document.getElementById('btn-new-transaction');
+    const btnCancel = document.getElementById('btn-cancel-transaction');
+    const form = document.getElementById('form-transaction');
+
+    if (filterType) filterType.addEventListener('change', renderTransactions);
+    if (filterCat) filterCat.addEventListener('change', renderTransactions);
+    if (btnNew) btnNew.addEventListener('click', () => openModal());
+    if (btnCancel) btnCancel.addEventListener('click', closeModal);
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveTransaction();
+        });
+    }
 }
 
 function openModal(transaction = null) {
     const modal = document.getElementById('modal-transaction');
     const title = document.getElementById('modal-title');
+    if (!modal) return;
     
     if (transaction) {
         title.textContent = 'Editar Transação';
         document.getElementById('transaction-id').value = transaction.id;
-        document.getElementById('transaction-description').value = transaction.descricao;
         document.getElementById('transaction-amount').value = transaction.valor;
         document.getElementById('transaction-type').value = transaction.tipo;
-        document.getElementById('transaction-category').value = transaction.categoria_id;
-        document.getElementById('transaction-date').value = transaction.data;
+        document.getElementById('transaction-category').value = transaction.categoria_id || '';
+        document.getElementById('transaction-date').value = transaction.data.split('T')[0];
         document.getElementById('transaction-payee').value = transaction.recebedor || transaction.pagador || '';
     } else {
         title.textContent = 'Nova Transação';
@@ -138,7 +160,8 @@ function openModal(transaction = null) {
 }
 
 function closeModal() {
-    document.getElementById('modal-transaction').style.display = 'none';
+    const modal = document.getElementById('modal-transaction');
+    if (modal) modal.style.display = 'none';
 }
 
 async function saveTransaction() {
@@ -149,17 +172,17 @@ async function saveTransaction() {
     const tipo = document.getElementById('transaction-type').value;
     const data_str = document.getElementById('transaction-date').value;
     const mes = new Date(data_str).toLocaleString('pt-BR', { month: 'long' });
+    const payee = document.getElementById('transaction-payee').value;
 
     const payload = {
-        descricao: document.getElementById('transaction-description').value,
         valor: parseFloat(document.getElementById('transaction-amount').value),
         tipo: tipo,
-        categoria_id: parseInt(document.getElementById('transaction-category').value),
+        categoria_id: document.getElementById('transaction-category').value ? parseInt(document.getElementById('transaction-category').value) : null,
         data: data_str,
         mes: mes,
         usuario_id: user.id,
-        recebedor: tipo === 'saida' ? document.getElementById('transaction-payee').value : null,
-        pagador: tipo === 'entrada' ? document.getElementById('transaction-payee').value : null
+        recebedor: tipo === 'saida' ? payee : null,
+        pagador: tipo === 'entrada' ? payee : null
     };
 
     let result;
@@ -174,18 +197,22 @@ async function saveTransaction() {
     } else {
         await fetchTransactions();
         closeModal();
+        if (window.updateUserLevelDisplay) window.updateUserLevelDisplay();
     }
 }
 
-function editTransaction(id) {
+window.editTransaction = function(id) {
     const t = transactions.find(t => t.id === id);
     if (t) openModal(t);
 }
 
-async function deleteTransaction(id) {
+window.deleteTransaction = async function(id) {
     if (confirm('Excluir esta transação?')) {
         const { error } = await supabaseClient.from('transacoes').delete().eq('id', id);
         if (error) alert('Erro: ' + error.message);
-        else await fetchTransactions();
+        else {
+            await fetchTransactions();
+            if (window.updateUserLevelDisplay) window.updateUserLevelDisplay();
+        }
     }
 }
