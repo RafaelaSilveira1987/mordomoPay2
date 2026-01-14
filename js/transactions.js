@@ -88,11 +88,12 @@ function renderTransactions() {
         else totalOut += valor;
 
         const catDesc = t.categoria_trasacoes ? t.categoria_trasacoes.descricao : 'Sem Categoria';
+        const descricaoExibicao = t.descricao || t.recebedor || t.pagador || '-';
 
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${new Date(t.data).toLocaleDateString('pt-BR')}</td>
-            <td>${t.recebedor || t.pagador || '-'}</td>
+            <td>${descricaoExibicao}</td>
             <td><span class="badge badge-secondary">${catDesc}</span></td>
             <td style="text-align: right; font-weight: bold;" class="${t.tipo === 'entrada' ? 'text-green' : 'text-red'}">
                 ${t.tipo === 'entrada' ? '+' : '-'} R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
@@ -121,12 +122,14 @@ function setupEventListeners() {
     const filterCat = document.getElementById('filter-category');
     const btnNew = document.getElementById('btn-new-transaction');
     const btnCancel = document.getElementById('btn-cancel-transaction');
+    const btnCloseModal = document.getElementById('btn-close-modal');
     const form = document.getElementById('form-transaction');
 
     if (filterType) filterType.addEventListener('change', renderTransactions);
     if (filterCat) filterCat.addEventListener('change', renderTransactions);
     if (btnNew) btnNew.addEventListener('click', () => openModal());
     if (btnCancel) btnCancel.addEventListener('click', closeModal);
+    if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -147,7 +150,7 @@ function openModal(transaction = null) {
         document.getElementById('transaction-type').value = transaction.tipo;
         document.getElementById('transaction-category').value = transaction.categoria_id || '';
         document.getElementById('transaction-date').value = transaction.data.split('T')[0];
-        document.getElementById('transaction-payee').value = transaction.recebedor || transaction.pagador || '';
+        document.getElementById('transaction-payee').value = transaction.descricao || transaction.recebedor || transaction.pagador || '';
     } else {
         title.textContent = 'Nova Transação';
         document.getElementById('form-transaction').reset();
@@ -184,7 +187,8 @@ async function saveTransaction() {
         data: data_str,
         mes: mes,
         usuario_id: user.id,
-        recebedor: payee
+        descricao: payee, // Preenchendo a coluna obrigatória 'descricao'
+        recebedor: payee  // Mantendo recebedor para compatibilidade
     };
 
     let result;
@@ -205,8 +209,13 @@ async function saveTransaction() {
 }
 
 window.editTransaction = function(id) {
-    const t = transactions.find(t => t.id === id);
-    if (t) openModal(t);
+    // Garantindo que o ID seja tratado como string para comparação
+    const t = transactions.find(t => String(t.id) === String(id));
+    if (t) {
+        openModal(t);
+    } else {
+        console.error('Transação não encontrada para o ID:', id);
+    }
 }
 
 window.deleteTransaction = async function(id) {
