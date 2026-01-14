@@ -65,7 +65,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const sidebar = document.getElementById('sidebar');
     
     if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
             sidebar.classList.add('open');
         });
     }
@@ -75,6 +76,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             sidebar.classList.remove('open');
         });
     }
+
+    // Fechar ao clicar fora
+    document.addEventListener('click', (e) => {
+        if (sidebar && sidebar.classList.contains('open') && !sidebar.contains(e.target) && e.target !== menuToggle) {
+            sidebar.classList.remove('open');
+        }
+    });
 
     // Configurar botão de logout se existir
     const logoutBtn = document.getElementById('logout-btn');

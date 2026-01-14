@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MordomoPay - Gestão Cristã</title>
+    <title>Dashboard - MordomoPay</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,7 +16,7 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo-container">
-                    <div class="logo-box" style="background: transparent;"><img src="images/logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                    <div class="logo-box"><img src="images/logo.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
                     <div class="logo-text">
                         <h1>MordomoPay</h1>
                         <p>Gestão Cristã</p>
@@ -25,31 +25,18 @@
                 </div>
             </div>
             <nav class="nav-menu">
-                <a href="index.html" class="nav-item active">
-                    <span>📊</span> Dashboard
-                </a>
-                <a href="transactions.html" class="nav-item">
-                    <span>💳</span> Transações
-                </a>
-                <a href="goals.html" class="nav-item">
-                    <span>🎯</span> Metas
-                </a>
-                <a href="tithe.html" class="nav-item">
-                    <span>🙏</span> Dízimos
-                </a>
-                <a href="tips.html" class="nav-item">
-                    <span>💡</span> Dicas
-                </a>
-                <a href="reports.html" class="nav-item">
-                    <span>📈</span> Relatórios
-                </a>
-                <a href="#" class="nav-item" id="logout-btn" style="margin-top: auto; color: var(--destructive);">
-                    <span>🚪</span> Sair
-                </a>
+                <a href="index.html" class="nav-item active"><span>📊</span> Dashboard</a>
+                <a href="transactions.html" class="nav-item"><span>💳</span> Transações</a>
+                <a href="goals.html" class="nav-item"><span>🎯</span> Metas</a>
+                <a href="tithe.html" class="nav-item"><span>🙏</span> Dízimos</a>
+                <a href="tips.html" class="nav-item"><span>💡</span> Dicas</a>
+                <a href="achievements.html" class="nav-item"><span>🏆</span> Conquistas</a>
+                <a href="reports.html" class="nav-item"><span>📈</span> Relatórios</a>
+                <a href="#" class="nav-item" id="logout-btn" style="margin-top: auto; color: #ef4444;"><span>🚪</span> Sair</a>
             </nav>
             <div class="sidebar-footer">
                 <p>"O que o sábio acumula com a mão é melhor que o que o tolo desperdiça."</p>
-                <span>Provérbios 10:14</span>
+                <span style="font-size: 0.7rem; color: #71717a;">Provérbios 10:14</span>
             </div>
         </aside>
 
@@ -57,15 +44,15 @@
         <main class="main-content">
             <header>
                 <div class="header-left">
-                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden" style="font-size: 1.5rem;">☰</button>
                     <h2 class="md-visible">Bem-vindo ao MordomoPay</h2>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
                         <p class="user-name" id="user-display-name">Usuário</p>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
                             <p class="user-status" id="user-status-display">Aprendiz de Mordomo</p>
-                            <div class="progress-container" style="width: 100px; height: 6px; margin: 0;">
+                            <div class="progress-container" style="width: 80px; height: 6px;">
                                 <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
                             </div>
                         </div>
@@ -75,75 +62,47 @@
             </header>
 
             <div class="content-area">
-                <!-- Hero Section -->
-                <div class="hero-card">
-                    <div class="hero-content">
-                        <h2>Bem-vindo de volta!</h2>
-                        <p>Seu progresso financeiro este mês está excelente. Continue assim!</p>
-                        <div class="hero-stats">
-                            <div class="stat-item">
-                                <p>Receitas</p>
-                                <p id="hero-income">R$ 0,00</p>
-                            </div>
-                            <div class="stat-item">
-                                <p>Despesas</p>
-                                <p id="hero-expense">R$ 0,00</p>
-                            </div>
-                            <div class="stat-item">
-                                <p>Saldo</p>
-                                <p id="hero-balance" class="text-accent">R$ 0,00</p>
-                            </div>
+                <!-- Hero Card -->
+                <div class="card" style="background-color: var(--primary); color: white; padding: 2rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; border: none;">
+                    <div>
+                        <h2 class="serif" style="font-size: 2rem; margin-bottom: 0.5rem;">Bem-vindo de volta!</h2>
+                        <p style="opacity: 0.9; margin-bottom: 1.5rem;">Seu progresso financeiro este mês está excelente. Continue assim!</p>
+                        <div style="display: flex; gap: 2rem;">
+                            <div><p style="font-size: 0.8rem; opacity: 0.8;">Receitas</p><p style="font-size: 1.5rem; font-weight: bold;" id="hero-income">R$ 0,00</p></div>
+                            <div><p style="font-size: 0.8rem; opacity: 0.8;">Despesas</p><p style="font-size: 1.5rem; font-weight: bold;" id="hero-expense">R$ 0,00</p></div>
+                            <div><p style="font-size: 0.8rem; opacity: 0.8;">Saldo</p><p style="font-size: 1.5rem; font-weight: bold;" id="hero-balance">R$ 0,00</p></div>
                         </div>
                     </div>
-                    <div class="hero-image">
-                        <img src="images/hero-financial-growth.png" alt="Crescimento Financeiro">
-                    </div>
+                    <div class="md-visible"><img src="images/hero-financial-growth.png" alt="Crescimento" style="width: 150px; border-radius: 12px;"></div>
                 </div>
 
-                <!-- Stats Grid -->
                 <div class="grid-3">
-                    <div class="card stat-card">
-                        <div class="flex-between">
-                            <h3>Saúde Financeira</h3>
-                            <span>🧡</span>
-                        </div>
-                        <p class="value" id="health-percentage">0%</p>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="health-bar" style="width: 0%"></div>
-                        </div>
-                        <p class="subtext">Excelente! Você está no caminho certo.</p>
-                    </div>
-                    <div class="card stat-card secondary">
-                        <div class="flex-between">
-                            <h3>Economia do Mês</h3>
-                            <span>📈</span>
-                        </div>
-                        <p class="value" id="month-savings">R$ 0,00</p>
-                        <p class="subtext">+12% comparado ao mês anterior</p>
-                    </div>
-                    <div class="card stat-card">
-                        <div class="flex-between">
-                            <h3>Metas Ativas</h3>
-                            <span>🎯</span>
-                        </div>
-                        <p class="value" id="active-goals-count">0</p>
-                        <p class="subtext" id="goals-summary">Nenhuma meta alcançada ainda.</p>
-                    </div>
-                </div>
-
-                <!-- Bottom Sections -->
-                <div class="grid-3">
-                    <div class="card" style="grid-column: span 2;">
-                        <h3 class="mb-4">Metas Financeiras</h3>
-                        <div id="goals-list-mini">
-                            <!-- Metas serão inseridas aqui via JS -->
-                        </div>
+                    <div class="card">
+                        <div class="flex-between mb-4"><h3>Saúde Financeira</h3><span>❤️</span></div>
+                        <p class="serif" style="font-size: 2rem; font-weight: bold;" id="health-percentage">0%</p>
+                        <div class="progress-container"><div class="progress-bar" id="health-bar" style="width: 0%"></div></div>
+                        <p style="font-size: 0.75rem; color: #71717a;">Excelente! Você está no caminho certo.</p>
                     </div>
                     <div class="card">
-                        <h3 class="mb-4">Conquistas</h3>
-                        <div id="achievements-list">
-                            <!-- Conquistas serão inseridas aqui via JS -->
-                        </div>
+                        <div class="flex-between mb-4"><h3>Economia do Mês</h3><span>📈</span></div>
+                        <p class="serif" style="font-size: 2rem; font-weight: bold;" id="month-savings">R$ 0,00</p>
+                        <p style="font-size: 0.75rem; color: #71717a; margin-top: 1rem;">+12% comparado ao mês anterior</p>
+                    </div>
+                    <div class="card">
+                        <div class="flex-between mb-4"><h3>Metas Ativas</h3><span>🎯</span></div>
+                        <p class="serif" style="font-size: 2rem; font-weight: bold;" id="active-goals-count">0</p>
+                        <p style="font-size: 0.75rem; color: #71717a; margin-top: 1rem;" id="goals-summary">Nenhuma meta alcançada ainda.</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                    <div class="card">
+                        <h3 class="serif mb-4">Metas Financeiras</h3>
+                        <div id="goals-list-mini"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="serif mb-4">Conquistas</h3>
+                        <div id="achievements-list"></div>
                     </div>
                 </div>
             </div>
