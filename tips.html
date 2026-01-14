@@ -63,13 +63,18 @@
         <main class="main-content">
             <header>
                 <div class="header-left">
-                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
-                    <h2 class="md-visible">Dicas de Mordomia</h2>
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden" style="font-size: 1.5rem;">☰</button>
+                    <h2 class="md-visible">Bem-vindo ao MordomoPay</h2>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
-                        <p class="user-name">Usuário</p>
-                        <p class="user-status">Conectado</p>
+                        <p class="user-name" id="user-display-name">Usuário</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
+                            <p class="user-status" id="user-status-display">Aprendiz de Mordomo</p>
+                            <div class="progress-container" style="width: 80px; height: 6px;">
+                                <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="user-avatar">U</div>
                 </div>

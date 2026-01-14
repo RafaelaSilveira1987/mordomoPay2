@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await renderMiniGoals();
     await checkAndAwardBadges();
     await renderAchievements();
+    await renderFavorites();
 });
 
 const MORDOMIA_LEVELS = [
@@ -39,25 +40,35 @@ async function updateDashboardStats() {
     const balance = income - expense;
     const health = income > 0 ? Math.min(Math.round((balance / income) * 100), 100) : 0;
 
-    document.getElementById('hero-income').textContent = `R$ ${income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('hero-expense').textContent = `R$ ${expense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('hero-balance').textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('health-percentage').textContent = `${health}%`;
-    document.getElementById('health-bar').style.width = `${health}%`;
-    document.getElementById('month-savings').textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    const incEl = document.getElementById('hero-income');
+    const expEl = document.getElementById('hero-expense');
+    const balEl = document.getElementById('hero-balance');
+    const healthPct = document.getElementById('health-percentage');
+    const healthBar = document.getElementById('health-bar');
+    const monthSav = document.getElementById('month-savings');
+
+    if (incEl) incEl.textContent = `R$ ${income.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (expEl) expEl.textContent = `R$ ${expense.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (balEl) balEl.textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (healthPct) healthPct.textContent = `${health}%`;
+    if (healthBar) healthBar.style.width = `${health}%`;
+    if (monthSav) monthSav.textContent = `R$ ${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
     
     const { data: goals } = await supabaseClient.from('metas_financeiras').select('id, valor_atual, valor_alvo').eq('usuario_id', user.id);
     const activeGoals = (goals || []).length;
     const completedGoals = (goals || []).filter(g => parseFloat(g.valor_atual) >= parseFloat(g.valor_alvo)).length;
 
-    document.getElementById('active-goals-count').textContent = activeGoals;
-    document.getElementById('goals-summary').textContent = completedGoals > 0 ? `${completedGoals} meta(s) alcançada(s)!` : 'Nenhuma meta alcançada ainda.';
+    const activeGoalsCount = document.getElementById('active-goals-count');
+    const goalsSummary = document.getElementById('goals-summary');
+    if (activeGoalsCount) activeGoalsCount.textContent = activeGoals;
+    if (goalsSummary) goalsSummary.textContent = completedGoals > 0 ? `${completedGoals} meta(s) alcançada(s)!` : 'Nenhuma meta alcançada ainda.';
 }
 
 async function renderMiniGoals() {
     const user = await Auth.getUser();
     if (!user) return;
     const container = document.getElementById('goals-list-mini');
+    if (!container) return;
     const { data: goals } = await supabaseClient.from('metas_financeiras').select('titulo, valor_atual, valor_alvo').eq('usuario_id', user.id).limit(3);
     if (!goals || goals.length === 0) {
         container.innerHTML = '<p style="font-size: 0.875rem; color: #71717a;">Nenhuma meta definida.</p>';
@@ -126,10 +137,39 @@ async function renderAchievements() {
     const user = await Auth.getUser();
     if (!user) return;
     const container = document.getElementById('achievements-list');
+    if (!container) return;
     const { data: badges } = await supabaseClient.from('badges').select('*').eq('usuario_id', user.id).order('data_conquista', { ascending: false }).limit(3);
     if (!badges || badges.length === 0) {
         container.innerHTML = '<p style="font-size: 0.875rem; color: #71717a;">Nenhuma conquista ainda.</p>';
         return;
     }
     container.innerHTML = badges.map(b => `<div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;"><div style="font-size: 1.5rem; background: #f1f1f5; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">${b.icone || '🏆'}</div><div><p style="font-weight: 600; font-size: 0.875rem;">${b.nome}</p><p style="font-size: 0.75rem; color: #71717a;">${b.descricao}</p></div></div>`).join('');
+}
+
+async function renderFavorites() {
+    const container = document.getElementById('favorites-container');
+    if (!container) return;
+
+    const favVerses = JSON.parse(localStorage.getItem('fav_verses') || '[]');
+    const favTips = JSON.parse(localStorage.getItem('fav_tips') || '[]');
+
+    if (favVerses.length === 0 && favTips.length === 0) {
+        container.innerHTML = '<p style="font-size: 0.875rem; color: #71717a;">Nenhum favorito salvo ainda.</p>';
+        return;
+    }
+
+    let html = '';
+    favVerses.forEach(v => {
+        html += `<div class="card" style="padding: 1rem; border-left: 4px solid var(--accent); margin-bottom: 1rem;">
+            <p style="font-style: italic; font-size: 0.875rem;">"${v.text}"</p>
+            <p style="font-weight: 600; font-size: 0.75rem; margin-top: 0.5rem;">— ${v.ref}</p>
+        </div>`;
+    });
+    favTips.forEach(t => {
+        html += `<div class="card" style="padding: 1rem; border-left: 4px solid var(--primary); margin-bottom: 1rem;">
+            <p style="font-weight: 600; font-size: 0.875rem;">${t.title}</p>
+            <p style="font-size: 0.75rem; margin-top: 0.25rem;">${t.text}</p>
+        </div>`;
+    });
+    container.innerHTML = html;
 }

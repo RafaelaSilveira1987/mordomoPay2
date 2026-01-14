@@ -39,19 +39,22 @@
                 <span style="font-size: 0.7rem; color: #71717a;">Provérbios 10:14</span>
             </div>
         </aside>
-        <!-- Sidebar -->
 
-        <!-- Main Content -->
         <main class="main-content">
             <header>
                 <div class="header-left">
-                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden" style="font-size: 1.5rem;">☰</button>
                     <h2 class="md-visible">Relatórios Financeiros</h2>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
-                        <p class="user-name">Usuário</p>
-                        <p class="user-status">Conectado</p>
+                        <p class="user-name" id="user-display-name">Usuário</p>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
+                            <p class="user-status" id="user-status-display">Aprendiz de Mordomo</p>
+                            <div class="progress-container" style="width: 80px; height: 6px;">
+                                <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                     <div class="user-avatar">U</div>
                 </div>
@@ -59,18 +62,18 @@
 
             <div class="content-area">
                 <div class="mb-8">
-                    <h1 class="serif">Relatórios</h1>
-                    <p class="text-muted-foreground">Análise detalhada da sua mordomia financeira</p>
+                    <h1 class="serif">Análise de Mordomia</h1>
+                    <p class="text-muted-foreground">Visualize seu progresso e fluxo financeiro</p>
                 </div>
 
-                <div class="grid-3" style="grid-template-columns: 2fr 1fr;">
+                <div class="grid-3" style="grid-template-columns: 2fr 1fr; gap: 1.5rem;">
                     <div class="card">
                         <h3 class="serif mb-4">Fluxo de Caixa (Mensal)</h3>
                         <canvas id="cashflow-chart" height="200"></canvas>
                     </div>
                     <div class="card">
                         <h3 class="serif mb-4">Gastos por Categoria</h3>
-                        <canvas id="category-chart" height="300"></canvas>
+                        <canvas id="category-chart" height="200"></canvas>
                     </div>
                 </div>
 
@@ -87,7 +90,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Dados reais serão inseridos aqui -->
+                                <!-- Preenchido via JS -->
                             </tbody>
                         </table>
                     </div>
@@ -102,10 +105,9 @@
             const user = await Auth.getUser();
             if (!user) return;
 
-            // Buscar todas as transações do usuário
             const { data: transactions, error } = await supabaseClient
                 .from('transacoes')
-                .select('*, categoria_trasacoes(descricao)')
+                .select('*')
                 .eq('usuario_id', user.id);
 
             if (error) {
@@ -125,19 +127,16 @@
                 const valor = parseFloat(t.valor);
                 const mes = t.mes || new Date(t.data).toLocaleString('pt-BR', { month: 'long' });
                 
-                // Processar meses
                 if (!months[mes]) months[mes] = { in: 0, out: 0 };
                 if (t.tipo === 'entrada') months[mes].in += valor;
                 else months[mes].out += valor;
 
-                // Processar categorias (apenas saídas)
                 if (t.tipo === 'saida') {
-                    const cat = t.categoria_trasacoes ? t.categoria_trasacoes.descricao : 'Outros';
+                    const cat = t.categoria || 'Outros';
                     categories[cat] = (categories[cat] || 0) + valor;
                 }
             });
 
-            // Renderizar Gráfico de Fluxo de Caixa
             const monthLabels = Object.keys(months);
             const inData = monthLabels.map(m => months[m].in);
             const outData = monthLabels.map(m => months[m].out);
@@ -154,7 +153,6 @@
                 options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
 
-            // Renderizar Gráfico de Categorias
             new Chart(document.getElementById('category-chart'), {
                 type: 'doughnut',
                 data: {

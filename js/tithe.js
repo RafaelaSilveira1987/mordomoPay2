@@ -3,6 +3,7 @@ let tithes = [];
 document.addEventListener('DOMContentLoaded', async () => {
     await fetchTithes();
     setupEventListeners();
+    setupCalculator();
 });
 
 async function fetchTithes() {
@@ -26,6 +27,7 @@ async function fetchTithes() {
 
 function renderTithes() {
     const historyList = document.getElementById('tithe-history');
+    if (!historyList) return;
     historyList.innerHTML = '';
 
     let totalT = 0;
@@ -61,22 +63,50 @@ function renderTithes() {
         historyList.appendChild(card);
     });
 
-    document.getElementById('total-tithes').textContent = `R$ ${totalT.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('total-offerings').textContent = `R$ ${totalO.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-    document.getElementById('total-given').textContent = `R$ ${(totalT + totalO).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    const tT = document.getElementById('total-tithes');
+    const tO = document.getElementById('total-offerings');
+    const tG = document.getElementById('total-given');
+    
+    if (tT) tT.textContent = `R$ ${totalT.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (tO) tO.textContent = `R$ ${totalO.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+    if (tG) tG.textContent = `R$ ${(totalT + totalO).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 }
 
 function setupEventListeners() {
-    document.getElementById('btn-new-tithe').addEventListener('click', () => openModal());
-    document.getElementById('btn-cancel-tithe').addEventListener('click', closeModal);
-    document.getElementById('form-tithe').addEventListener('submit', async (e) => {
+    const btnNew = document.getElementById('btn-new-tithe');
+    const btnCancel = document.getElementById('btn-cancel-tithe');
+    const form = document.getElementById('form-tithe');
+
+    if (btnNew) btnNew.addEventListener('click', () => openModal());
+    if (btnCancel) btnCancel.addEventListener('click', closeModal);
+    if (form) form.addEventListener('submit', async (e) => {
         e.preventDefault();
         await saveTithe();
     });
 }
 
+function setupCalculator() {
+    const incomeInput = document.getElementById('calc-income');
+    const percentInput = document.getElementById('calc-percent');
+    const resultDisplay = document.getElementById('calc-result');
+
+    if (incomeInput && percentInput && resultDisplay) {
+        const calculate = () => {
+            const income = parseFloat(incomeInput.value) || 0;
+            const percent = parseFloat(percentInput.value) || 10;
+            const result = (income * percent) / 100;
+            resultDisplay.textContent = `R$ ${result.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        };
+
+        incomeInput.addEventListener('input', calculate);
+        percentInput.addEventListener('input', calculate);
+    }
+}
+
 function openModal(tithe = null) {
     const modal = document.getElementById('modal-tithe');
+    if (!modal) return;
+    
     if (tithe) {
         document.getElementById('tithe-modal-title').textContent = 'Editar Registro';
         document.getElementById('tithe-id').value = tithe.id;
@@ -94,7 +124,8 @@ function openModal(tithe = null) {
 }
 
 function closeModal() {
-    document.getElementById('modal-tithe').style.display = 'none';
+    const modal = document.getElementById('modal-tithe');
+    if (modal) modal.style.display = 'none';
 }
 
 async function saveTithe() {
