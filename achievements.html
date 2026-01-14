@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -39,21 +38,19 @@
                 <span style="font-size: 0.7rem; color: #71717a;">Provérbios 10:14</span>
             </div>
         </aside>
-        <!-- Sidebar -->
 
-        <!-- Main Content -->
         <main class="main-content">
             <header>
                 <div class="header-left">
-                    <button id="menu-toggle" class="btn btn-ghost md-hidden">☰</button>
+                    <button id="menu-toggle" class="btn btn-ghost md-hidden" style="font-size: 1.5rem;">☰</button>
                     <h2 class="md-visible">Quadro de Honra da Mordomia</h2>
                 </div>
                 <div class="header-right">
                     <div class="user-info">
                         <p class="user-name" id="user-display-name">Usuário</p>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: flex-end;">
                             <p class="user-status" id="user-status-display">Aprendiz de Mordomo</p>
-                            <div class="progress-container" style="width: 100px; height: 6px; margin: 0;">
+                            <div class="progress-container" style="width: 80px; height: 6px;">
                                 <div class="progress-bar" id="level-progress-bar" style="width: 0%"></div>
                             </div>
                         </div>
@@ -68,9 +65,7 @@
                     <p class="text-muted-foreground">Acompanhe sua evolução na gestão fiel dos recursos</p>
                 </div>
 
-                <div class="grid-3" id="badges-grid">
-                    <!-- Badges serão carregadas aqui -->
-                </div>
+                <div class="grid-3" id="badges-grid"></div>
             </div>
         </main>
     </div>
@@ -78,12 +73,14 @@
     <script src="js/auth.js"></script>
     <script>
         const ALL_POSSIBLE_BADGES = [
-            { id: 'primeiro_passo', nome: 'Primeiro Passo', desc: 'Registrou sua primeira movimentação.', icone: '🌱', meta: 1, tipo: 'transacoes' },
-            { id: 'primicias', nome: 'Primícias', desc: 'Honrou a Deus com sua primeira contribuição.', icone: '🙏', meta: 1, tipo: 'dizimos' },
-            { id: 'diligente', nome: 'Diligente', desc: 'Alcançou sua primeira meta financeira.', icone: '🎯', meta: 1, tipo: 'metas_concluidas' },
-            { id: 'semeador', nome: 'Semeador', desc: 'Registrou 5 fontes de entrada diferentes.', icone: '🌾', meta: 5, tipo: 'entradas' },
-            { id: 'sentinela', nome: 'Sentinela', desc: 'Manteve o saldo positivo por 3 meses.', icone: '🛡️', meta: 3, tipo: 'meses_positivos' },
-            { id: 'mestre_poupador', nome: 'Mestre Poupador', desc: 'Economizou mais de R$ 5.000,00.', icone: '💰', meta: 5000, tipo: 'economia_total' }
+            { id: 'primeiro_passo', nome: 'Primeiro Passo', desc: 'Registre sua primeira movimentação.', icone: '🌱', meta: 1, tipo: 'transacoes' },
+            { id: 'primicias', nome: 'Primícias', desc: 'Honre a Deus com seu primeiro dízimo.', icone: '🙏', meta: 1, tipo: 'dizimos' },
+            { id: 'diligente', nome: 'Diligente', desc: 'Alcance 3 metas financeiras concluídas.', icone: '🎯', meta: 3, tipo: 'metas_concluidas' },
+            { id: 'semeador', nome: 'Semeador', desc: 'Registre 10 fontes de entrada diferentes.', icone: '🌾', meta: 10, tipo: 'entradas' },
+            { id: 'sentinela', nome: 'Sentinela', desc: 'Mantenha o saldo positivo por 6 meses.', icone: '🛡️', meta: 6, tipo: 'meses_positivos' },
+            { id: 'mestre_poupador', nome: 'Mestre Poupador', desc: 'Economize um total de R$ 10.000,00.', icone: '💰', meta: 10000, tipo: 'economia_total' },
+            { id: 'generosidade', nome: 'Coração Generoso', desc: 'Realize 12 ofertas voluntárias.', icone: '❤️', meta: 12, tipo: 'ofertas' },
+            { id: 'fidelidade', nome: 'Mordomo Fiel', desc: 'Registre transações por 30 dias seguidos.', icone: '📜', meta: 30, tipo: 'dias_seguidos' }
         ];
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -94,9 +91,8 @@
             const user = await Auth.getUser();
             if (!user) return;
 
-            // Buscar dados reais para calcular progresso
-            const { data: transactions } = await supabaseClient.from('transacoes').select('tipo, valor').eq('usuario_id', user.id);
-            const { data: tithes } = await supabaseClient.from('dizimos_ofertas').select('id').eq('usuario_id', user.id);
+            const { data: transactions } = await supabaseClient.from('transacoes').select('tipo, valor, data').eq('usuario_id', user.id);
+            const { data: tithes } = await supabaseClient.from('dizimos_ofertas').select('tipo').eq('usuario_id', user.id);
             const { data: goals } = await supabaseClient.from('metas_financeiras').select('valor_atual, valor_alvo').eq('usuario_id', user.id);
             const { data: existingBadges } = await supabaseClient.from('badges').select('nome').eq('usuario_id', user.id);
 
@@ -105,29 +101,28 @@
 
             grid.innerHTML = ALL_POSSIBLE_BADGES.map(badge => {
                 let current = 0;
-                let status = 'locked'; // locked, in-progress, achieved
-
-                // Calcular progresso real
                 if (badge.tipo === 'transacoes') current = transactions?.length || 0;
-                if (badge.tipo === 'dizimos') current = tithes?.length || 0;
+                if (badge.tipo === 'dizimos') current = tithes?.filter(t => t.tipo === 'dizimo').length || 0;
+                if (badge.tipo === 'ofertas') current = tithes?.filter(t => t.tipo === 'oferta').length || 0;
                 if (badge.tipo === 'metas_concluidas') current = goals?.filter(g => parseFloat(g.valor_atual) >= parseFloat(g.valor_alvo)).length || 0;
                 if (badge.tipo === 'entradas') current = transactions?.filter(t => t.tipo === 'entrada').length || 0;
-                
-                if (badgeNames.includes(badge.nome)) {
-                    status = 'achieved';
-                    current = badge.meta;
-                } else if (current > 0) {
-                    status = 'in-progress';
+                if (badge.tipo === 'economia_total') {
+                    let inc = 0, exp = 0;
+                    transactions?.forEach(t => t.tipo === 'entrada' ? inc += parseFloat(t.valor) : exp += parseFloat(t.valor));
+                    current = Math.max(0, inc - exp);
                 }
+                
+                let status = 'locked';
+                if (badgeNames.includes(badge.nome)) status = 'achieved';
+                else if (current > 0) status = 'in-progress';
 
                 const progressPercent = Math.min(Math.round((current / badge.meta) * 100), 100);
 
                 return `
-                    <div class="card badge-card ${status}">
+                    <div class="card badge-card ${status} ${status === 'in-progress' ? 'in-progress' : ''}">
                         <span class="badge-icon">${badge.icone}</span>
                         <h3 class="serif mb-1">${badge.nome}</h3>
                         <p style="font-size: 0.75rem; color: var(--muted-foreground); margin-bottom: 1rem;">${badge.desc}</p>
-                        
                         <div style="width: 100%;">
                             <div class="flex-between mb-1">
                                 <span style="font-size: 0.7rem; font-weight: 600;">${status === 'achieved' ? 'Conquistado!' : 'Progresso'}</span>

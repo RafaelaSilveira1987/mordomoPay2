@@ -11,46 +11,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body style="background-color: var(--muted); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem;">
-    <div class="card" style="width: 100%; max-width: 400px; padding: 2rem;">
-        <div style="text-align: center; margin-bottom: 2rem;">
-            <div class="logo-box" style="margin: 0 auto 1rem; width: 64px; height: 64px; background: transparent;"><img src="images/mordomopay.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
-            <h1 class="serif" style="font-size: 1.5rem;">Bem-vindo de volta</h1>
-            <p class="text-muted-foreground">Entre com seu celular e senha</p>
-        </div>
-
-        <form id="login-form">
-            <div class="form-group">
-                <label for="phone">Celular</label>
-                <input type="text" id="phone" placeholder="(00) 00000-0000" required>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="images/mordomopay.png" alt="MordomoPay" class="login-logo">
+                <h1 class="serif">Bem-vindo</h1>
+                <p style="color: var(--muted-foreground); font-size: 0.875rem;">Acesse sua conta de gestão cristã</p>
             </div>
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" placeholder="••••••••" required>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="phone">Celular</label>
+                    <input type="text" id="phone" placeholder="(00) 00000-0000" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <div id="login-error" style="color: #ef4444; font-size: 0.875rem; margin-bottom: 1rem; display: none; text-align: center;"></div>
+                <button type="submit" class="btn btn-login" id="login-submit">Entrar</button>
+            </form>
+
+            <div class="login-divider">
+                <span>ou</span>
             </div>
-            <div id="login-error" style="color: var(--destructive); font-size: 0.875rem; margin-bottom: 1rem; display: none;"></div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;" id="login-submit">Entrar</button>
-        </form>
 
-        <div class="login-divider"><span>ou</span></div>
-        
-        <button type="button" class="btn btn-whatsapp" onclick="redirectToWhatsAppSignup()">
-            <i class="fab fa-whatsapp"></i> Cadastre-se via WhatsApp
-        </button>
-
-        <div style="text-align: center; margin-top: 1.5rem;">
-            <p class="text-muted-foreground" style="font-size: 0.875rem;">Dúvidas? Entre em contato com o suporte.</p>
+            <a href="https://wa.me/5532987073537?text=olá%20quero%20me%20cadastrar%20no%20Mordomo%20Pay!" target="_blank" class="btn-whatsapp">
+                <i class="fab fa-whatsapp"></i> Cadastre-se via WhatsApp
+            </a>
         </div>
     </div>
 
     <script src="js/auth.js"></script>
     <script>
-        function redirectToWhatsAppSignup() {
-            const phone = "5532987073537";
-            const message = encodeURIComponent("olá quero me cadastrar no Mordomo Pay!");
-            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
-        }
-
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const phone = document.getElementById('phone').value;
