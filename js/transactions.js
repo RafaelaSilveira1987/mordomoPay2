@@ -101,8 +101,8 @@ function renderTransactions() {
             <td style="text-align: center;"><span class="badge badge-success">${t.tipo === 'entrada' ? 'Recebido' : 'Pago'}</span></td>
             <td style="text-align: center;">
                 <div style="display: flex; gap: 0.5rem; justify-content: center;">
-                    <button class="btn btn-ghost" onclick="editTransaction(${t.id})" title="Editar">✏️</button>
-                    <button class="btn btn-ghost" onclick="deleteTransaction(${t.id})" title="Excluir">🗑️</button>
+                    <button class="btn btn-ghost" onclick="editTransaction('${t.id}')" title="Editar">✏️</button>
+                    <button class="btn btn-ghost" onclick="deleteTransaction('${t.id}')" title="Excluir">🗑️</button>
                 </div>
             </td>
         `;
@@ -181,8 +181,7 @@ async function saveTransaction() {
         data: data_str,
         mes: mes,
         usuario_id: user.id,
-        recebedor: tipo === 'saida' ? payee : null,
-        pagador: tipo === 'entrada' ? payee : null
+        recebedor: payee // Unificado para usar apenas a coluna 'recebedor' que existe no banco
     };
 
     let result;
