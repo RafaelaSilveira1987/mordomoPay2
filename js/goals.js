@@ -1,6 +1,9 @@
 let goals = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const user = await Auth.getUser();
+    if (!user) return;
+    
     await fetchGoals();
     setupEventListeners();
 });
@@ -32,10 +35,14 @@ function renderGoals() {
     let completed = 0;
     let totalProgress = 0;
 
+    if (goals.length === 0) {
+        goalsList.innerHTML = '<div class="card" style="text-align: center; padding: 2rem; color: var(--muted-foreground);">Nenhuma meta cadastrada. Comece definindo um objetivo!</div>';
+    }
+
     goals.forEach(goal => {
-        const target = parseFloat(goal.valor_alvo);
-        const current = parseFloat(goal.valor_atual);
-        const percentage = Math.min((current / target) * 100, 100);
+        const target = parseFloat(goal.valor_alvo) || 0;
+        const current = parseFloat(goal.valor_atual) || 0;
+        const percentage = target > 0 ? Math.min((current / target) * 100, 100) : 0;
         if (percentage >= 100) completed++;
         totalProgress += percentage;
 
@@ -53,20 +60,19 @@ function renderGoals() {
                         <p class="text-muted-foreground" style="font-size: 0.875rem;">${goal.versiculo || ''}</p>
                         <div style="display: flex; gap: 1rem; font-size: 0.75rem; color: var(--muted-foreground); margin-top: 0.5rem;">
                             <span>Categoria: ${goal.categoria || 'Geral'}</span>
-                            <span>Status: ${goal.status}</span>
                             <span>Prazo: ${goal.prazo ? new Date(goal.prazo).toLocaleDateString('pt-BR') : '-'}</span>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-2">
-                    <button class="btn btn-ghost" onclick="editGoal('${goal.id}')">✏️</button>
-                    <button class="btn btn-ghost" onclick="deleteGoal('${goal.id}')">🗑️</button>
+                    <button class="btn btn-ghost" onclick="editGoal('${goal.id}')" title="Editar">✏️</button>
+                    <button class="btn btn-ghost" onclick="deleteGoal('${goal.id}')" title="Excluir">🗑️</button>
                 </div>
             </div>
             <div class="progress-section">
                 <div class="flex-between" style="font-size: 0.875rem; margin-bottom: 0.5rem;">
                     <span style="font-weight: 600;">Progresso: ${percentage.toFixed(0)}%</span>
-                    <span class="text-muted-foreground">R$ ${current.toLocaleString('pt-BR')} de R$ ${target.toLocaleString('pt-BR')}</span>
+                    <span class="text-muted-foreground">R$ ${current.toLocaleString('pt-BR', {minimumFractionDigits: 2})} de R$ ${target.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                 </div>
                 <div class="progress-container">
                     <div class="progress-bar" style="width: ${percentage}%"></div>
@@ -84,10 +90,12 @@ function renderGoals() {
 function setupEventListeners() {
     const btnNew = document.getElementById('btn-new-goal');
     const btnCancel = document.getElementById('btn-cancel-goal');
+    const btnCloseModal = document.getElementById('btn-close-modal');
     const form = document.getElementById('form-goal');
 
     if (btnNew) btnNew.addEventListener('click', () => openModal());
     if (btnCancel) btnCancel.addEventListener('click', closeModal);
+    if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
     if (form) form.addEventListener('submit', async (e) => {
         e.preventDefault();
         await saveGoal();
@@ -104,9 +112,9 @@ function openModal(goal = null) {
         document.getElementById('goal-name').value = goal.titulo;
         document.getElementById('goal-target').value = goal.valor_alvo;
         document.getElementById('goal-current').value = goal.valor_atual;
-        document.getElementById('goal-deadline').value = goal.prazo;
-        document.getElementById('goal-category').value = goal.categoria;
-        document.getElementById('goal-description').value = goal.versiculo;
+        document.getElementById('goal-deadline').value = goal.prazo ? goal.prazo.split('T')[0] : '';
+        document.getElementById('goal-category').value = goal.categoria || '';
+        document.getElementById('goal-description').value = goal.versiculo || '';
     } else {
         document.getElementById('goal-modal-title').textContent = 'Nova Meta';
         document.getElementById('form-goal').reset();
@@ -122,21 +130,18 @@ function closeModal() {
 
 async function saveGoal() {
     const user = await Auth.getUser();
-    if (!user) {
-        alert('Sessão expirada. Por favor, faça login novamente.');
-        window.location.href = 'login.html';
-        return;
-    }
+    if (!user) return;
 
     const id = document.getElementById('goal-id').value;
     const payload = {
         titulo: document.getElementById('goal-name').value,
         valor_alvo: parseFloat(document.getElementById('goal-target').value),
         valor_atual: parseFloat(document.getElementById('goal-current').value),
-        prazo: document.getElementById('goal-deadline').value,
+        prazo: document.getElementById('goal-deadline').value || null,
         categoria: document.getElementById('goal-category').value,
         versiculo: document.getElementById('goal-description').value,
-        usuario_id: user.id
+        usuario_id: user.id,
+        status: 'em_andamento'
     };
 
     let result;
@@ -152,11 +157,12 @@ async function saveGoal() {
     } else {
         await fetchGoals();
         closeModal();
+        if (window.updateUserLevelDisplay) window.updateUserLevelDisplay();
     }
 }
 
 window.editGoal = function(id) {
-    const g = goals.find(g => g.id === id);
+    const g = goals.find(g => String(g.id) === String(id));
     if (g) openModal(g);
 }
 
@@ -168,6 +174,7 @@ window.deleteGoal = async function(id) {
             alert('Erro: ' + error.message);
         } else {
             await fetchGoals();
+            if (window.updateUserLevelDisplay) window.updateUserLevelDisplay();
         }
     }
 }

@@ -84,17 +84,59 @@ window.updateUserLevelDisplay = async function() {
     if (avatarEl) avatarEl.textContent = (user.nome || 'U').charAt(0).toUpperCase();
 };
 
+// Gerenciamento de Tema e Sidebar
+const ThemeManager = {
+    init() {
+        const savedTheme = localStorage.getItem('mordomopay_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        this.updateThemeIcon(savedTheme);
+
+        const savedSidebar = localStorage.getItem('mordomopay_sidebar') || 'expanded';
+        if (savedSidebar === 'collapsed') {
+            document.getElementById('sidebar')?.classList.add('collapsed');
+        }
+    },
+    toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('mordomopay_theme', newTheme);
+        this.updateThemeIcon(newTheme);
+    },
+    updateThemeIcon(theme) {
+        const icon = document.getElementById('theme-toggle-icon');
+        if (icon) icon.textContent = theme === 'light' ? '🌙' : '☀️';
+    },
+    toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            sidebar.classList.toggle('collapsed');
+            const state = sidebar.classList.contains('collapsed') ? 'collapsed' : 'expanded';
+            localStorage.setItem('mordomopay_sidebar', state);
+        }
+    }
+};
+
 // Inicialização global
 window.Auth = Auth;
 window.supabaseClient = supabaseClient;
+window.ThemeManager = ThemeManager;
 
 document.addEventListener('DOMContentLoaded', async () => {
+    ThemeManager.init();
+
     if (!window.location.pathname.includes('login.html')) {
         Auth.checkAuth();
         window.updateUserLevelDisplay();
     }
 
-    // Toggle Sidebar Mobile
+    // Event Listeners para UI
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) themeBtn.addEventListener('click', () => ThemeManager.toggleTheme());
+
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    if (sidebarToggle) sidebarToggle.addEventListener('click', () => ThemeManager.toggleSidebar());
+
     const menuToggle = document.getElementById('menu-toggle');
     const closeMenu = document.getElementById('close-menu');
     const sidebar = document.getElementById('sidebar');
